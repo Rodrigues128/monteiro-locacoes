@@ -1,22 +1,27 @@
 import { Check, Ruler, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
+/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {{ product: Product | null, onClose: () => void, onAdd: (product: Product) => void }} ProductDetailProps */
+
+/** @param {string} size */
 function getDimensions(size) {
   const match = size.match(/(\d+(?:[.,]\d+)?)\s*×\s*(\d+(?:[.,]\d+)?)/)
   if (!match) return null
   return [Number(match[1].replace(",", ".")), Number(match[2].replace(",", "."))]
 }
 
-export default function ProductDetail({ product, onClose, onAdd }) {
+export default function ProductDetail(/** @type {ProductDetailProps} */ { product, onClose, onAdd }) {
   const [width, setWidth] = useState("")
   const [length, setLength] = useState("")
-  const closeButton = useRef(null)
+  const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null))
 
   useEffect(() => {
     if (!product) return undefined
     setWidth("")
     setLength("")
     closeButton.current?.focus()
+    /** @param {KeyboardEvent} event */
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose()
     }
@@ -43,7 +48,9 @@ export default function ProductDetail({ product, onClose, onAdd }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-title"
-        onClick={(event) => event.stopPropagation()}
+        onClick={(/** @type {import("react").MouseEvent<HTMLDivElement>} */ event) =>
+          event.stopPropagation()
+        }
         className="w-full max-w-lg rounded-t-3xl border border-gray-100 bg-white p-7 shadow-2xl sm:rounded-3xl sm:p-9"
       >
         <div className="flex justify-between gap-4">
@@ -92,7 +99,9 @@ export default function ProductDetail({ product, onClose, onAdd }) {
               Largura (m)
               <input
                 value={width}
-                onChange={(event) => setWidth(event.target.value)}
+                onChange={(/** @type {import("react").ChangeEvent<HTMLInputElement>} */ event) =>
+                  setWidth(event.target.value)
+                }
                 type="number"
                 min="0"
                 step="0.1"
@@ -104,7 +113,9 @@ export default function ProductDetail({ product, onClose, onAdd }) {
               Comprimento (m)
               <input
                 value={length}
-                onChange={(event) => setLength(event.target.value)}
+                onChange={(/** @type {import("react").ChangeEvent<HTMLInputElement>} */ event) =>
+                  setLength(event.target.value)
+                }
                 type="number"
                 min="0"
                 step="0.1"

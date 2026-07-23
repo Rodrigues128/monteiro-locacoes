@@ -3,7 +3,10 @@ import { Image } from "@/components/ui/image";
 
 const WHATSAPP = "https://wa.me/5567981396452";
 
-export default function ProductCard({ product, onAdd, onDetails, added }) {
+/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {{ product: Product, onAdd: (product: Product) => void, onDetails: (product: Product) => void, added: boolean }} ProductCardProps */
+
+export default function ProductCard(/** @type {ProductCardProps} */ { product, onAdd, onDetails, added }) {
   const waLink = `${WHATSAPP}?text=${encodeURIComponent(`Olá! Tenho interesse em alugar: ${product.name} (R$ ${product.price},00)`)}`;
   return <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
     <button onClick={() => onDetails(product)} className="relative block h-56 w-full overflow-hidden bg-gray-50 text-left">

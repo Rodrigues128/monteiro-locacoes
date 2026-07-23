@@ -1,3 +1,20 @@
+/**
+ * @typedef {{
+ *   id: number,
+ *   name: string,
+ *   category: string,
+ *   age: string,
+ *   size: string,
+ *   wet: boolean,
+ *   capacity: string,
+ *   price: number,
+ *   image: string,
+ *   description: string,
+ *   features: string[]
+ * }} Product
+ */
+
+/** @type {Product[]} */
 export const products = [
   { id: 1, name: "Tobogã Aventura", category: "Infláveis", age: "4+", size: "8 × 4 m", wet: true, capacity: "8 crianças", price: 550, image: "/images/toboga-aventura.png", description: "Uma atração de grande impacto para transformar a festa em uma aventura inesquecível.", features: ["Estrutura inflável reforçada", "Escada de acesso com degraus", "Piscina de amortecimento", "Montagem e desmontação inclusas"] },
   { id: 2, name: "Pula-Pula Premium", category: "Brinquedos", age: "3+", size: "4,3 × 4,3 m", wet: false, capacity: "6 crianças", price: 180, image: "/images/pula-pula-premium.png", description: "Estrutura profissional com rede de proteção e montagem completa no local.", features: ["Rede de proteção total", "Lona de alta resistência", "Capacidade para 6 crianças", "Montagem inclusa"] },

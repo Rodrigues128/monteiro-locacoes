@@ -3,9 +3,12 @@ import ProductCard from "@/components/site/ProductCard";
 import ProductDetail from "@/components/site/ProductDetail";
 import { categories, products } from "@/data/products";
 
-export default function Catalog({ onAdd, addedIds }) {
+/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {{ onAdd: (product: Product) => void, addedIds: number[] }} CatalogProps */
+
+export default function Catalog(/** @type {CatalogProps} */ { onAdd, addedIds }) {
   const [category, setCategory] = useState("Todos");
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(/** @type {Product | null} */ (null));
   const visible = category === "Todos" ? products : products.filter(p => p.category === category);
   return <section id="atracoes" className="bg-[#F9FAFB] px-5 py-24 lg:px-8">
     <div className="mx-auto max-w-7xl"><div className="mx-auto mb-12 max-w-2xl text-center"><p className="mb-3 text-sm font-black uppercase tracking-[.2em] text-[#00BFFF]">Catálogo</p><h2 className="text-4xl font-black tracking-[-.03em] text-gray-900 sm:text-5xl">Nossas Atrações</h2><p className="mt-4 text-lg text-gray-500">Tudo o que sua festa precisa, selecionado, higienizado e montado pela nossa equipe.</p></div>

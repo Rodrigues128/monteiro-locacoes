@@ -10,7 +10,9 @@ const links = [
   ["Contato", "#contato"],
 ]
 
-export default function Header({ count, onCart }) {
+/** @typedef {{ count: number, onCart: () => void }} HeaderProps */
+
+export default function Header(/** @type {HeaderProps} */ { count, onCart }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (

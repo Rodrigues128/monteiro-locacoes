@@ -11,9 +11,14 @@ import CartDrawer from "@/components/site/CartDrawer"
 
 const CART_KEY = "monteiro-locacoes-cart"
 
+/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {Product & { quantity: number }} CartProduct */
+
+/** @returns {CartProduct[]} */
 function loadCart() {
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY)) || []
+    const savedCart = localStorage.getItem(CART_KEY)
+    return savedCart ? JSON.parse(savedCart) : []
   } catch {
     return []
   }
@@ -34,6 +39,7 @@ export default function Home() {
     return () => window.clearTimeout(timeout)
   }, [notice])
 
+  /** @param {Product} product */
   const add = (product) => {
     setCart((items) =>
       items.some((item) => item.id === product.id)
@@ -43,6 +49,10 @@ export default function Home() {
     setNotice(`${product.name} foi adicionado à sacola`)
   }
 
+  /**
+   * @param {number} id
+   * @param {number} change
+   */
   const changeQuantity = (id, change) => {
     setCart((items) =>
       items.map((item) =>
@@ -70,7 +80,9 @@ export default function Home() {
         open={open}
         items={cart}
         onClose={() => setOpen(false)}
-        onRemove={(id) => setCart((items) => items.filter((item) => item.id !== id))}
+        onRemove={(/** @type {number} */ id) =>
+          setCart((items) => items.filter((item) => item.id !== id))
+        }
         onQuantityChange={changeQuantity}
       />
       <div

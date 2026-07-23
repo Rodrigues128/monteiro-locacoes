@@ -1,7 +1,24 @@
 import { Calendar, Check, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
-export default function CartDrawer({
+/**
+ * @typedef {{
+ *   id: number,
+ *   name: string,
+ *   price: number,
+ *   quantity?: number
+ * }} CartItem
+ *
+ * @typedef {{
+ *   open: boolean,
+ *   items: CartItem[],
+ *   onClose: () => void,
+ *   onRemove: (id: number) => void,
+ *   onQuantityChange: (id: number, change: number) => void
+ * }} CartDrawerProps
+ */
+
+export default function CartDrawer(/** @type {CartDrawerProps} */ {
   open,
   items,
   onClose,
@@ -9,7 +26,7 @@ export default function CartDrawer({
   onQuantityChange,
 }) {
   const [date, setDate] = useState("")
-  const closeButton = useRef(null)
+  const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null))
   const total = items.reduce(
     (sum, item) => sum + item.price * (item.quantity || 1),
     0
@@ -20,6 +37,7 @@ export default function CartDrawer({
     if (!open) return undefined
     closeButton.current?.focus()
     document.body.style.overflow = "hidden"
+    /** @param {KeyboardEvent} event */
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose()
     }
@@ -149,7 +167,9 @@ export default function CartDrawer({
           type="date"
           min={today}
           value={date}
-          onChange={(event) => setDate(event.target.value)}
+          onChange={(/** @type {import("react").ChangeEvent<HTMLInputElement>} */ event) =>
+            setDate(event.target.value)
+          }
           className="mt-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-[#00BFFF]"
         />
         <div className="mt-4 flex justify-between text-lg font-black text-gray-900">
