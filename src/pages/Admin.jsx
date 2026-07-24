@@ -93,9 +93,18 @@ export default function Admin() {
   const [notice, setNotice] = useState("")
   const [tab, setTab] = useState("products")
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(/** @type {boolean | null} */ (null))
   const reload = async () => { const [loadedProducts, loadedGallery] = await Promise.all([fetchProducts(true), fetchGallery(true)]); setProducts(loadedProducts); setGallery(loadedGallery) }
   useEffect(() => { if (!supabase) return; supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false) }); const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession)); return () => listener.subscription.unsubscribe() }, [])
-  useEffect(() => { if (session) reload().catch((error) => setNotice(`Erro ao carregar dados: ${error.message}`)) }, [session])
+  useEffect(() => {
+    if (!session || !supabase) { setIsAdmin(null); return }
+    setIsAdmin(null)
+    supabase.from("admin_users").select("user_id").eq("user_id", session.user.id).maybeSingle().then(({ data, error }) => {
+      if (error) setNotice(`Não foi possível confirmar sua permissão: ${error.message}`)
+      setIsAdmin(Boolean(data) && !error)
+    })
+  }, [session])
+  useEffect(() => { if (session && isAdmin) reload().catch((error) => setNotice(`Erro ao carregar dados: ${error.message}`)) }, [session, isAdmin])
   const notify = (message, failed = false) => { setNotice(message); if (!failed) { setEditing(null); reload().catch(() => {}) } }
   const removeProduct = async (product) => { if (!window.confirm(`Excluir “${product.name}”?`)) return; const { error } = await supabase.from("products").delete().eq("id", product.id); if (error) return notify(`Erro ao excluir: ${error.message}`, true); await removeImage(product.image_path); notify("Produto excluído.") }
   const toggleProduct = async (product) => { const { error } = await supabase.from("products").update({ active: !product.active }).eq("id", product.id); notify(error ? `Erro: ${error.message}` : "Status atualizado.", Boolean(error)) }
@@ -105,5 +114,7 @@ export default function Admin() {
   if (!isSupabaseConfigured) return <main className="grid min-h-screen place-items-center p-5 text-center"><div><h1 className="text-2xl font-black">Supabase não configurado</h1><p className="mt-2 text-gray-500">Preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no arquivo `.env`.</p></div></main>
   if (loading) return <main className="grid min-h-screen place-items-center">Carregando painel...</main>
   if (!session) return <Login onLogin={() => {}} />
+  if (isAdmin === null) return <main className="grid min-h-screen place-items-center bg-slate-50">Verificando permissões...</main>
+  if (!isAdmin) return <main className="grid min-h-screen place-items-center bg-slate-50 p-5 text-center"><section className="max-w-lg rounded-3xl border border-amber-100 bg-white p-8 shadow-xl"><p className="text-sm font-black uppercase tracking-widest text-amber-600">Acesso sem permissão</p><h1 className="mt-3 text-3xl font-black text-slate-900">Seu usuário ainda não é administrador</h1><p className="mt-4 leading-relaxed text-slate-500">Para cadastrar produtos e enviar fotos, execute no SQL Editor do Supabase o comando abaixo com o UUID do usuário logado.</p><pre className="mt-6 overflow-auto rounded-2xl bg-slate-950 p-4 text-left text-sm text-cyan-200">insert into public.admin_users (user_id) values ('UUID_DO_USUÁRIO');</pre><button onClick={() => supabase.auth.signOut()} className="mt-6 rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Sair</button></section></main>
   return <><AdminDashboard products={products} gallery={gallery} tab={tab} setTab={setTab} setEditing={setEditing} productForm={editing && <ProductForm product={editing.id ? editing : null} onSaved={notify} onCancel={() => setEditing(null)} />} onSignOut={() => supabase.auth.signOut()} onToggleProduct={toggleProduct} onRemoveProduct={removeProduct} onUploadGallery={uploadGallery} onUpdateGallery={updateGallery} onRemoveGallery={removeGallery} /><Notice message={notice} /></>
 }

@@ -36,3 +36,4 @@ dist-ssr
 .agents/
 .codex/
 .vscode/
+supabase/
