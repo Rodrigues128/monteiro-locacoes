@@ -1,7 +1,7 @@
 import { Check, Ruler, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
-/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {import("@/lib/catalog").Product} Product */
 /** @typedef {{ product: Product | null, onClose: () => void, onAdd: (product: Product) => void }} ProductDetailProps */
 
 /** @param {string} size */

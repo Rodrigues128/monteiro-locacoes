@@ -175,8 +175,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mx-auto mt-8 max-w-7xl border-t border-gray-100 pt-6 text-center text-xs leading-relaxed text-gray-400 sm:text-sm">
+        <div className="mx-auto mt-8 flex max-w-7xl flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-gray-100 pt-6 text-center text-xs leading-relaxed text-gray-400 sm:text-sm">
           © 2026 Monteiro Locações · Todos os direitos reservados.
+          <a href="/admin" className="font-semibold text-gray-500 transition hover:text-[#00BFFF]">
+            Área administrativa
+          </a>
         </div>
       </div>
     </footer>

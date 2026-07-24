@@ -11,7 +11,7 @@ import CartDrawer from "@/components/site/CartDrawer"
 
 const CART_KEY = "monteiro-locacoes-cart"
 
-/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {import("@/lib/catalog").Product} Product */
 /** @typedef {Product & { quantity: number }} CartProduct */
 
 /** @returns {CartProduct[]} */
@@ -50,7 +50,7 @@ export default function Home() {
   }
 
   /**
-   * @param {number} id
+   * @param {string} id
    * @param {number} change
    */
   const changeQuantity = (id, change) => {
@@ -80,7 +80,7 @@ export default function Home() {
         open={open}
         items={cart}
         onClose={() => setOpen(false)}
-        onRemove={(/** @type {number} */ id) =>
+        onRemove={(/** @type {string} */ id) =>
           setCart((items) => items.filter((item) => item.id !== id))
         }
         onQuantityChange={changeQuantity}

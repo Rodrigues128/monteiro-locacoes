@@ -4,7 +4,7 @@ import WhatsAppIcon from "@/components/WhatsAppIcon"
 
 const WHATSAPP = "https://wa.me/5567981396452"
 
-/** @typedef {import("@/data/products").Product} Product */
+/** @typedef {import("@/lib/catalog").Product} Product */
 /** @typedef {{ product: Product, onAdd: (product: Product) => void, onDetails: (product: Product) => void, added: boolean }} ProductCardProps */
 
 export default function ProductCard(/** @type {ProductCardProps} */ { product, onAdd, onDetails, added }) {
@@ -14,7 +14,7 @@ export default function ProductCard(/** @type {ProductCardProps} */ { product, o
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <button onClick={() => onDetails(product)} className="relative block h-56 w-full overflow-hidden bg-gray-50 text-left">
-        <Image src={product.image} alt={product.name} className="h-full w-full transition duration-500 group-hover:scale-105" fittingType="fill" />
+        <Image src={product.image} onError={(event) => { event.currentTarget.src = product.fallbackImage }} alt={product.name} className="h-full w-full transition duration-500 group-hover:scale-105" fittingType="fill" />
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 font-mono text-xs font-medium text-gray-600 shadow-sm backdrop-blur">{product.size}</span>
         <span className="absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-[#00BFFF] text-white opacity-0 shadow-lg transition group-hover:opacity-100"><ArrowUpRight size={18} /></span>
       </button>

@@ -4,7 +4,7 @@ import WhatsAppIcon from "@/components/WhatsAppIcon"
 
 /**
  * @typedef {{
- *   id: number,
+ *   id: string,
  *   name: string,
  *   price: number | null,
  *   quantity?: number
@@ -14,8 +14,8 @@ import WhatsAppIcon from "@/components/WhatsAppIcon"
  *   open: boolean,
  *   items: CartItem[],
  *   onClose: () => void,
- *   onRemove: (id: number) => void,
- *   onQuantityChange: (id: number, change: number) => void
+ *   onRemove: (id: string) => void,
+ *   onQuantityChange: (id: string, change: number) => void
  * }} CartDrawerProps
  */
 
