@@ -1,8 +1,8 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
-import ScrollToTop from './components/ScrollToTop';
-import Home from '@/pages/Home';
-import Admin from '@/pages/Admin';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import PageNotFound from "./lib/PageNotFound";
+import ScrollToTop from "./components/ScrollToTop";
+import Home from "@/pages/Home";
+import Admin from "@/pages/Admin";
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

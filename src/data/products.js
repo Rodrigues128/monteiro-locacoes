@@ -27,4 +27,4 @@ export const products = [
   { id: 9, name: "Aero Hockey", category: "Jogos", age: "Livre", size: "Consultar", wet: false, capacity: "Uso alternado", price: null, image: "/images/real/aero-hockey-real.jpeg", description: "Uma atração dinâmica para deixar a área de jogos ainda mais animada.", features: ["Acessórios inclusos", "Montagem no local", "Ideal para eventos e festas", "Disponibilidade sob consulta"] }
 ]
 
-export const categories = ["Todos", "Infláveis", "Brinquedos", "Jogos", "Doces", "Decoração", "Estrutura"]
+export const categories = ["Todos", "Infláveis", "Brinquedos", "Jogos", "Doces", "Decoração", "Estrutura", "Serviços"]

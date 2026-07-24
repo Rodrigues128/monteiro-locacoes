@@ -1,43 +1,48 @@
-import { Check, Ruler, X } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { Check, Ruler, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 /** @typedef {import("@/lib/catalog").Product} Product */
 /** @typedef {{ product: Product | null, onClose: () => void, onAdd: (product: Product) => void }} ProductDetailProps */
 
 /** @param {string} size */
 function getDimensions(size) {
-  const match = size.match(/(\d+(?:[.,]\d+)?)\s*×\s*(\d+(?:[.,]\d+)?)/)
-  if (!match) return null
-  return [Number(match[1].replace(",", ".")), Number(match[2].replace(",", "."))]
+  const match = size.match(/(\d+(?:[.,]\d+)?)\s*×\s*(\d+(?:[.,]\d+)?)/);
+  if (!match) return null;
+  return [
+    Number(match[1].replace(",", ".")),
+    Number(match[2].replace(",", ".")),
+  ];
 }
 
-export default function ProductDetail(/** @type {ProductDetailProps} */ { product, onClose, onAdd }) {
-  const [width, setWidth] = useState("")
-  const [length, setLength] = useState("")
-  const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null))
+export default function ProductDetail(
+  /** @type {ProductDetailProps} */ { product, onClose, onAdd },
+) {
+  const [width, setWidth] = useState("");
+  const [length, setLength] = useState("");
+  const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null));
 
   useEffect(() => {
-    if (!product) return undefined
-    setWidth("")
-    setLength("")
-    closeButton.current?.focus()
+    if (!product) return undefined;
+    setWidth("");
+    setLength("");
+    closeButton.current?.focus();
     /** @param {KeyboardEvent} event */
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose()
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [product, onClose])
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [product, onClose]);
 
-  if (!product) return null
+  if (!product) return null;
 
-  const needed = getDimensions(product.size)
-  const hasMeasurements = Number(width) > 0 && Number(length) > 0
+  const needed = getDimensions(product.size);
+  const hasMeasurements = Number(width) > 0 && Number(length) > 0;
   const fits =
     needed &&
     hasMeasurements &&
     ((Number(width) >= needed[0] && Number(length) >= needed[1]) ||
-      (Number(width) >= needed[1] && Number(length) >= needed[0]))
+      (Number(width) >= needed[1] && Number(length) >= needed[0]));
 
   return (
     <div
@@ -48,9 +53,9 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-title"
-        onClick={(/** @type {import("react").MouseEvent<HTMLDivElement>} */ event) =>
-          event.stopPropagation()
-        }
+        onClick={(
+          /** @type {import("react").MouseEvent<HTMLDivElement>} */ event,
+        ) => event.stopPropagation()}
         className="w-full max-w-lg rounded-t-3xl border border-gray-100 bg-white p-7 shadow-2xl sm:rounded-3xl sm:p-9"
       >
         <div className="flex justify-between gap-4">
@@ -58,7 +63,10 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
             <p className="text-xs font-bold uppercase tracking-widest text-[#00BFFF]">
               {product.category}
             </p>
-            <h2 id="product-title" className="mt-2 text-3xl font-black tracking-tight text-gray-900">
+            <h2
+              id="product-title"
+              className="mt-2 text-3xl font-black tracking-tight text-gray-900"
+            >
               {product.name}
             </h2>
           </div>
@@ -72,19 +80,24 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
           </button>
         </div>
 
-        <p className="mt-4 leading-relaxed text-gray-500">{product.description}</p>
+        <p className="mt-4 leading-relaxed text-gray-500">
+          {product.description}
+        </p>
 
         <div className="my-6 grid grid-cols-3 gap-3 font-mono text-xs">
           <div className="rounded-xl bg-gray-50 p-4">
-            <span className="text-gray-400">ESPAÇO</span><br />
+            <span className="text-gray-400">ESPAÇO</span>
+            <br />
             <span className="font-bold text-gray-700">{product.size}</span>
           </div>
           <div className="rounded-xl bg-gray-50 p-4">
-            <span className="text-gray-400">IDADE</span><br />
+            <span className="text-gray-400">IDADE</span>
+            <br />
             <span className="font-bold text-gray-700">{product.age}</span>
           </div>
           <div className="rounded-xl bg-gray-50 p-4">
-            <span className="text-gray-400">CAPAC.</span><br />
+            <span className="text-gray-400">CAPAC.</span>
+            <br />
             <span className="font-bold text-gray-700">{product.capacity}</span>
           </div>
         </div>
@@ -99,9 +112,9 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
               Largura (m)
               <input
                 value={width}
-                onChange={(/** @type {import("react").ChangeEvent<HTMLInputElement>} */ event) =>
-                  setWidth(event.target.value)
-                }
+                onChange={(
+                  /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
+                ) => setWidth(event.target.value)}
                 type="number"
                 min="0"
                 step="0.1"
@@ -113,9 +126,9 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
               Comprimento (m)
               <input
                 value={length}
-                onChange={(/** @type {import("react").ChangeEvent<HTMLInputElement>} */ event) =>
-                  setLength(event.target.value)
-                }
+                onChange={(
+                  /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
+                ) => setLength(event.target.value)}
                 type="number"
                 min="0"
                 step="0.1"
@@ -127,7 +140,9 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
         </fieldset>
 
         {hasMeasurements && (
-          <p className={`mt-3 flex items-center gap-2 text-sm ${fits ? "text-green-600" : "text-orange-500"}`}>
+          <p
+            className={`mt-3 flex items-center gap-2 text-sm ${fits ? "text-green-600" : "text-orange-500"}`}
+          >
             <Check size={16} />
             {fits
               ? "Perfeito, esta atração cabe no espaço informado."
@@ -143,5 +158,5 @@ export default function ProductDetail(/** @type {ProductDetailProps} */ { produc
         </button>
       </div>
     </div>
-  )
+  );
 }

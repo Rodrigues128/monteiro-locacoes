@@ -1,6 +1,6 @@
-import { Calendar, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
-import WhatsAppIcon from "@/components/WhatsAppIcon"
+import { Calendar, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 
 /**
  * @typedef {{
@@ -19,53 +19,55 @@ import WhatsAppIcon from "@/components/WhatsAppIcon"
  * }} CartDrawerProps
  */
 
-export default function CartDrawer(/** @type {CartDrawerProps} */ {
-  open,
-  items,
-  onClose,
-  onRemove,
-  onQuantityChange,
-}) {
-  const [date, setDate] = useState("")
-  const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null))
+export default function CartDrawer(
+  /** @type {CartDrawerProps} */ {
+    open,
+    items,
+    onClose,
+    onRemove,
+    onQuantityChange,
+  },
+) {
+  const [date, setDate] = useState("");
+  const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null));
   const total = items.reduce(
     (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
-    0
-  )
-  const today = new Date().toLocaleDateString("en-CA")
+    0,
+  );
+  const today = new Date().toLocaleDateString("en-CA");
 
   useEffect(() => {
-    if (!open) return undefined
-    closeButton.current?.focus()
-    document.body.style.overflow = "hidden"
+    if (!open) return undefined;
+    closeButton.current?.focus();
+    document.body.style.overflow = "hidden";
     /** @param {KeyboardEvent} event */
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose()
-    }
-    document.addEventListener("keydown", handleKeyDown)
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.body.style.overflow = ""
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [open, onClose])
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
 
   const send = () => {
     const list = items
       .map((item) => `• ${item.quantity || 1}x ${item.name}`)
-      .join("\n")
-    const hasCustomPrice = items.some((item) => item.price === null)
+      .join("\n");
+    const hasCustomPrice = items.some((item) => item.price === null);
     const estimate = hasCustomPrice
       ? `Valor parcial dos itens com preço: R$ ${total},00. Os demais valores serão confirmados no atendimento.`
-      : `Valor estimado: R$ ${total},00`
+      : `Valor estimado: R$ ${total},00`;
     const text = `Olá! Gostaria de consultar disponibilidade para ${
       date || "uma data a combinar"
-    }:\n${list}\n${estimate}`
+    }:\n${list}\n${estimate}`;
     window.open(
       `https://wa.me/5567981396452?text=${encodeURIComponent(text)}`,
       "_blank",
-      "noopener,noreferrer"
-    )
-  }
+      "noopener,noreferrer",
+    );
+  };
 
   return (
     <>
@@ -119,7 +121,11 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
             <div className="grid h-48 place-items-center text-center text-gray-400">
               <div>
                 <ShoppingBag className="mx-auto mb-3" />
-                <p>Seu pedido está vazio.<br />Adicione atrações do catálogo.</p>
+                <p>
+                  Seu pedido está vazio.
+                  <br />
+                  Adicione atrações do catálogo.
+                </p>
               </div>
             </div>
           )}
@@ -129,7 +135,9 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
                 <div>
                   <p className="font-bold text-gray-900">{item.name}</p>
                   <p className="text-sm text-gray-400">
-                    {item.price === null ? "Valor sob consulta" : `R$ ${item.price * (item.quantity || 1)},00`}
+                    {item.price === null
+                      ? "Valor sob consulta"
+                      : `R$ ${item.price * (item.quantity || 1)},00`}
                   </p>
                 </div>
                 <button
@@ -172,14 +180,18 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
           type="date"
           min={today}
           value={date}
-          onChange={(/** @type {import("react").ChangeEvent<HTMLInputElement>} */ event) =>
-            setDate(event.target.value)
-          }
+          onChange={(
+            /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
+          ) => setDate(event.target.value)}
           className="mt-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-[#00BFFF]"
         />
         <div className="mt-4 flex justify-between text-lg font-black text-gray-900">
           <span>Valor estimado</span>
-          <span>{items.some((item) => item.price === null) ? `A partir de R$ ${total},00` : `R$ ${total},00`}</span>
+          <span>
+            {items.some((item) => item.price === null)
+              ? `A partir de R$ ${total},00`
+              : `R$ ${total},00`}
+          </span>
         </div>
         <p className="mt-1 text-xs text-gray-400">
           Frete e disponibilidade serão confirmados pelo WhatsApp.
@@ -194,5 +206,5 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
         </button>
       </aside>
     </>
-  )
+  );
 }

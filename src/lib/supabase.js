@@ -1,20 +1,21 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : null
+  : null;
 
-export const STORAGE_BUCKET = "catalog"
+export const STORAGE_BUCKET = "catalog";
 
 /** @param {string | null} path */
 export function getImageUrl(path) {
-  if (!path) return ""
-  if (/^https?:\/\//.test(path)) return path
-  if (!supabase) return ""
-  return supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl
+  if (!path) return "";
+  if (/^https?:\/\//.test(path)) return path;
+  if (!supabase) return "";
+  return supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path).data
+    .publicUrl;
 }

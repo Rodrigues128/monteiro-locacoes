@@ -1,6 +1,6 @@
-import { Menu, ShoppingBag, X } from "lucide-react"
-import { useState } from "react"
-import { Image } from "@/components/ui/image"
+import { Menu, ShoppingBag, X } from "lucide-react";
+import { useState } from "react";
+import { Image } from "@/components/ui/image";
 
 const links = [
   ["Atrações", "#atracoes"],
@@ -8,18 +8,22 @@ const links = [
   ["Galeria", "#galeria"],
   ["Depoimentos", "#depoimentos"],
   ["Contato", "#contato"],
-]
+];
 
 /** @typedef {{ count: number, onCart: () => void }} HeaderProps */
 
 export default function Header(/** @type {HeaderProps} */ { count, onCart }) {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 lg:px-8">
         <a href="#inicio" className="flex items-center gap-3">
-          <Image src="/images/logo.jpg" alt="Monteiro Locações" className="h-11 w-11 rounded-full" />
+          <Image
+            src="/images/logo.jpg"
+            alt="Monteiro Locações"
+            className="h-11 w-11 rounded-full"
+          />
           <span className="hidden text-lg font-black tracking-tight text-gray-900 sm:inline">
             MONTEIRO <span className="text-gray-400">LOCAÇÕES</span>
           </span>
@@ -27,7 +31,11 @@ export default function Header(/** @type {HeaderProps} */ { count, onCart }) {
 
         <nav className="hidden items-center gap-8 text-sm font-semibold text-gray-600 md:flex">
           {links.map(([label, href]) => (
-            <a key={href} className="transition hover:text-[#00BFFF] focus-visible:outline-[#00BFFF]" href={href}>
+            <a
+              key={href}
+              className="transition hover:text-[#00BFFF] focus-visible:outline-[#00BFFF]"
+              href={href}
+            >
               {label}
             </a>
           ))}
@@ -75,5 +83,5 @@ export default function Header(/** @type {HeaderProps} */ { count, onCart }) {
         ))}
       </nav>
     </header>
-  )
+  );
 }

@@ -1,15 +1,15 @@
-import { ArrowUpRight, Instagram, Mail, MapPin, Phone } from "lucide-react"
-import { Image } from "@/components/ui/image"
-import WhatsAppIcon from "@/components/WhatsAppIcon"
+import { ArrowUpRight, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Image } from "@/components/ui/image";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 
-const WHATSAPP = "https://wa.me/5567981396452"
+const WHATSAPP = "https://wa.me/5567981396452";
 
 const quickLinks = [
   ["Atrações", "#atracoes"],
   ["Como funciona", "#como-funciona"],
   ["Galeria", "#galeria"],
   ["Depoimentos", "#depoimentos"],
-]
+];
 
 export default function Footer() {
   return (
@@ -51,7 +51,7 @@ export default function Footer() {
               <span className="min-w-0">
                 <strong className="block text-gray-900">E-mail</strong>
                 <span className="block truncate text-sm text-gray-500">
-                  contato@monteirolocacoes.com.br
+                  monteirolocacoes.contato@gmail.com
                 </span>
               </span>
             </a>
@@ -177,11 +177,14 @@ export default function Footer() {
 
         <div className="mx-auto mt-8 flex max-w-7xl flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-gray-100 pt-6 text-center text-xs leading-relaxed text-gray-400 sm:text-sm">
           © 2026 Monteiro Locações · Todos os direitos reservados.
-          <a href="/admin" className="font-semibold text-gray-500 transition hover:text-[#00BFFF]">
+          <a
+            href="/admin"
+            className="font-semibold text-gray-500 transition hover:text-[#00BFFF]"
+          >
             Área administrativa
           </a>
         </div>
       </div>
     </footer>
-  )
+  );
 }

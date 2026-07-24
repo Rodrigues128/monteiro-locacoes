@@ -32,6 +32,15 @@ As políticas já deixam itens ativos e imagens públicos para visitantes, e res
 
 Mantenha a pasta `supabase` versionada no repositório: ela contém o SQL para criar as tabelas, as políticas de segurança, o bucket de imagens e os dados iniciais. O Netlify não executa esses arquivos; você os executa no SQL Editor do Supabase.
 
+## Segurança
+
+Depois de executar o schema, execute também [`supabase/security-hardening.sql`](./supabase/security-hardening.sql) no SQL Editor. O script reforça RLS, restringe o bucket `catalog` a imagens JPG, PNG ou WEBP de até 5 MB e limita uploads às pastas `products/` e `gallery/`.
+
+- Use somente `VITE_SUPABASE_URL` e a chave **Publishable** (ou **anon public**) no Netlify. Nunca publique `sb_secret`, `service_role` ou uma senha no repositório.
+- Em **Authentication > Providers > Email**, mantenha a confirmação de e-mail ativa e habilite CAPTCHA/rate limiting se o projeto receber muitas tentativas de login.
+- Crie administradores apenas pelo Supabase Dashboard ou SQL Editor; o painel não oferece cadastro público de usuários.
+- Use uma senha única e forte para cada administrador e remova imediatamente usuários que não devem mais ter acesso em `admin_users` e Authentication.
+
 ## Desenvolvimento
 
 ```bash

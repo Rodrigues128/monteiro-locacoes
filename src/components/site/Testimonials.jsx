@@ -1,7 +1,7 @@
-import { ExternalLink, Quote, Star } from "lucide-react"
+import { ExternalLink, Quote, Star } from "lucide-react";
 
 const GOOGLE_PROFILE =
-  "https://www.google.com/maps/place/MONTEIRO+LOCA%C3%87%C3%95ES/@-20.4694625,-54.543652,17z/data=!4m8!3m7!1s0x9486efa50dda302f:0x64508179bf0c4e41!8m2!3d-20.4694625!4d-54.543652!9m1!1b1!16s%2Fg%2F11wvfp94ch"
+  "https://www.google.com/maps/place/MONTEIRO+LOCA%C3%87%C3%95ES/@-20.4694625,-54.543652,17z/data=!4m8!3m7!1s0x9486efa50dda302f:0x64508179bf0c4e41!8m2!3d-20.4694625!4d-54.543652!9m1!1b1!16s%2Fg%2F11wvfp94ch";
 
 const reviews = [
   {
@@ -34,7 +34,7 @@ const reviews = [
     time: "Editado há um mês",
     text: "Gostei da atenção, agilidade, produto e do cuidado com o nosso piso. Com certeza alugarei de novo.",
   },
-]
+];
 
 export default function Testimonials() {
   return (
@@ -67,7 +67,12 @@ export default function Testimonials() {
               aria-hidden="true"
               width="36"
               height="36"
-              style={{ width: 36, height: 36, objectFit: "contain", display: "block" }}
+              style={{
+                width: 36,
+                height: 36,
+                objectFit: "contain",
+                display: "block",
+              }}
             />
             <strong className="text-4xl font-black leading-none text-slate-950">
               5,0
@@ -110,7 +115,12 @@ export default function Testimonials() {
                     aria-hidden="true"
                     width="22"
                     height="22"
-                    style={{ width: 22, height: 22, objectFit: "contain", display: "block" }}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      objectFit: "contain",
+                      display: "block",
+                    }}
                   />
                   <span className="text-base font-bold text-gray-400">
                     Google
@@ -151,5 +161,5 @@ export default function Testimonials() {
         </div>
       </div>
     </section>
-  )
+  );
 }

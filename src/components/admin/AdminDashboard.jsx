@@ -15,6 +15,7 @@ function GalleryImageCard({ image, onUpdate, onRemove }) {
   }
 
   return (
+    <>
     <article className="group overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         <img
@@ -37,26 +38,21 @@ function GalleryImageCard({ image, onUpdate, onRemove }) {
           <p className="truncate text-sm font-bold text-slate-700">{image.alt_text || "Foto sem descrição"}</p>
           <span className="shrink-0 text-xs font-bold text-slate-400">#{image.sort_order}</span>
         </div>
-        {editing && (
-          <div className="mt-4 rounded-2xl bg-slate-50 p-3">
-            <label className="block text-xs font-bold text-slate-600">Descrição da foto
-              <input value={altText} onChange={(event) => setAltText(event.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-[#00BFFF]" />
-            </label>
-            <label className="mt-3 block text-xs font-bold text-slate-600">Posição na galeria
-              <input type="number" min="0" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="mt-1.5 w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-[#00BFFF]" />
-            </label>
-            <div className="mt-3 flex justify-end gap-2">
-              <button onClick={() => setEditing(false)} className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 text-slate-500" aria-label="Cancelar edição"><X size={16} /></button>
-              <button onClick={save} className="grid h-9 w-9 place-items-center rounded-xl bg-[#00BFFF] text-white" aria-label="Salvar edição"><Check size={16} /></button>
-            </div>
-          </div>
-        )}
         <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
           <button onClick={() => onUpdate(image, { active: !image.active })} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition hover:text-slate-900"><Power size={16} /> {image.active ? "Ocultar" : "Publicar"}</button>
           <button onClick={() => onRemove(image)} className="grid h-8 w-8 place-items-center rounded-lg text-red-500 transition hover:bg-red-50" aria-label="Excluir foto"><Trash2 size={16} /></button>
         </div>
       </div>
     </article>
+    {editing && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-5 backdrop-blur-sm" onClick={() => setEditing(false)}>
+      <section role="dialog" aria-modal="true" aria-labelledby={`gallery-edit-${image.id}`} onClick={(event) => event.stopPropagation()} className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl sm:p-8">
+        <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#00BFFF]">Galeria</p><h2 id={`gallery-edit-${image.id}`} className="mt-2 text-2xl font-black">Editar foto</h2><p className="mt-2 text-sm text-slate-500">A descrição ajuda visitantes e mecanismos de busca a entenderem a imagem.</p></div><button onClick={() => setEditing(false)} className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-500" aria-label="Fechar"><X size={18} /></button></div>
+        <label className="mt-6 block text-sm font-bold text-slate-700">Descrição da foto<input value={altText} onChange={(event) => setAltText(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none transition focus:border-[#00BFFF] focus:bg-white" /></label>
+        <label className="mt-4 block text-sm font-bold text-slate-700">Posição na galeria<input type="number" min="0" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="mt-2 w-28 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none transition focus:border-[#00BFFF] focus:bg-white" /></label>
+        <div className="mt-7 flex justify-end gap-3"><button onClick={() => setEditing(false)} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600">Cancelar</button><button onClick={save} className="inline-flex items-center gap-2 rounded-xl bg-[#00BFFF] px-5 py-3 text-sm font-bold text-white"><Check size={16} /> Salvar alterações</button></div>
+      </section>
+    </div>}
+    </>
   )
 }
 
