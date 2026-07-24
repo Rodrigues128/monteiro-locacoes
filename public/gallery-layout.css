@@ -1,0 +1,61 @@
+/*
+ * Galeria da Monteiro Locações
+ *
+ * Mantém os cartões com a mesma proporção para evitar degraus, buracos
+ * e imagens excessivamente grandes. Os seletores contemplam os dois IDs
+ * usados pelo site ao longo do projeto.
+ */
+:is(#galeria, #gallery) > div > [class*="grid"],
+:is(#galeria, #gallery) > div > div > [class*="grid"] {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+  align-items: stretch !important;
+}
+
+:is(#galeria, #gallery) > div > [class*="grid"] > *,
+:is(#galeria, #gallery) > div > div > [class*="grid"] > * {
+  grid-column: span 1 !important;
+  grid-row: span 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  aspect-ratio: 4 / 3 !important;
+  overflow: hidden !important;
+  border-radius: 1rem !important;
+}
+
+:is(#galeria, #gallery) > div > [class*="grid"] > * img,
+:is(#galeria, #gallery) > div > div > [class*="grid"] > * img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: transform 300ms ease !important;
+}
+
+:is(#galeria, #gallery) > div > [class*="grid"] > *:hover img,
+:is(#galeria, #gallery) > div > div > [class*="grid"] > *:hover img {
+  transform: scale(1.025);
+}
+
+@media (max-width: 1023px) {
+  :is(#galeria, #gallery) > div > [class*="grid"],
+  :is(#galeria, #gallery) > div > div > [class*="grid"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 639px) {
+  :is(#galeria, #gallery) > div > [class*="grid"],
+  :is(#galeria, #gallery) > div > div > [class*="grid"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.875rem !important;
+  }
+
+  :is(#galeria, #gallery) > div > [class*="grid"] > *,
+  :is(#galeria, #gallery) > div > div > [class*="grid"] > * {
+    border-radius: 0.875rem !important;
+  }
+}

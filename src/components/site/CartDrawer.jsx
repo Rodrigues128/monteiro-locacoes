@@ -1,11 +1,12 @@
-import { Calendar, Check, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react"
+import { Calendar, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import WhatsAppIcon from "@/components/WhatsAppIcon"
 
 /**
  * @typedef {{
  *   id: number,
  *   name: string,
- *   price: number,
+ *   price: number | null,
  *   quantity?: number
  * }} CartItem
  *
@@ -28,7 +29,7 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
   const [date, setDate] = useState("")
   const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null))
   const total = items.reduce(
-    (sum, item) => sum + item.price * (item.quantity || 1),
+    (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
     0
   )
   const today = new Date().toLocaleDateString("en-CA")
@@ -52,9 +53,13 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
     const list = items
       .map((item) => `• ${item.quantity || 1}x ${item.name}`)
       .join("\n")
+    const hasCustomPrice = items.some((item) => item.price === null)
+    const estimate = hasCustomPrice
+      ? `Valor parcial dos itens com preço: R$ ${total},00. Os demais valores serão confirmados no atendimento.`
+      : `Valor estimado: R$ ${total},00`
     const text = `Olá! Gostaria de consultar disponibilidade para ${
       date || "uma data a combinar"
-    }:\n${list}\nValor estimado: R$ ${total},00`
+    }:\n${list}\n${estimate}`
     window.open(
       `https://wa.me/5567981396452?text=${encodeURIComponent(text)}`,
       "_blank",
@@ -124,7 +129,7 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
                 <div>
                   <p className="font-bold text-gray-900">{item.name}</p>
                   <p className="text-sm text-gray-400">
-                    R$ {item.price * (item.quantity || 1)},00
+                    {item.price === null ? "Valor sob consulta" : `R$ ${item.price * (item.quantity || 1)},00`}
                   </p>
                 </div>
                 <button
@@ -174,7 +179,7 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
         />
         <div className="mt-4 flex justify-between text-lg font-black text-gray-900">
           <span>Valor estimado</span>
-          <span>R$ {total},00</span>
+          <span>{items.some((item) => item.price === null) ? `A partir de R$ ${total},00` : `R$ ${total},00`}</span>
         </div>
         <p className="mt-1 text-xs text-gray-400">
           Frete e disponibilidade serão confirmados pelo WhatsApp.
@@ -184,7 +189,7 @@ export default function CartDrawer(/** @type {CartDrawerProps} */ {
           onClick={send}
           className="mt-4 flex items-center justify-center gap-2 rounded-full bg-[#25D366] py-4 font-bold text-white focus-visible:outline-slate-900 disabled:opacity-30"
         >
-          <Check size={18} />
+          <WhatsAppIcon size={19} white />
           Consultar no WhatsApp
         </button>
       </aside>

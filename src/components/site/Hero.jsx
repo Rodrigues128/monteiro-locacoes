@@ -1,5 +1,6 @@
-import { ArrowDownRight, CalendarCheck, ShieldCheck } from "lucide-react";
+import { ArrowDownRight, ShieldCheck } from "lucide-react";
 import { Image } from "@/components/ui/image";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 
 export default function Hero() {
   return <section id="inicio" className="relative overflow-hidden bg-white pt-28">
@@ -8,9 +9,9 @@ export default function Hero() {
       <div><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#00BFFF]/20 bg-[#00BFFF]/5 px-4 py-2 text-sm font-bold text-[#0099CC]"><ShieldCheck size={16}/> Diversão com segurança</div>
         <h1 className="text-5xl font-black leading-[.95] tracking-[-.04em] text-gray-900 sm:text-6xl lg:text-7xl">Sua festa em<br/><span className="text-[#00BFFF]">outra dimensão.</span></h1>
         <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-500">Brinquedos, doces, decoração e estrutura com entrega, montagem e cuidado do início ao fim.</p>
-        <div className="mt-8 flex flex-wrap gap-3"><a href="#atracoes" className="inline-flex items-center gap-2 rounded-full bg-[#00BFFF] px-7 py-4 font-bold text-white transition hover:brightness-110">Ver atrações <ArrowDownRight size={18}/></a><a href="https://wa.me/5567981396452" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-4 font-bold text-white transition hover:brightness-110"><CalendarCheck size={18}/> Consultar data</a></div>
+        <div className="mt-8 flex flex-wrap gap-3"><a href="#atracoes" className="inline-flex items-center gap-2 rounded-full bg-[#00BFFF] px-7 py-4 font-bold text-white transition hover:brightness-110">Ver atrações <ArrowDownRight size={18}/></a><a href="https://wa.me/5567981396452" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-4 font-bold text-white transition hover:brightness-110"><WhatsAppIcon size={19} white/> Consultar data</a></div>
       </div>
-      <div className="relative"><div className="absolute inset-10 rounded-full bg-[#00BFFF]/10 blur-2xl"/><Image src="/images/hero-toboga.png" alt="Tobogã inflável colorido da Monteiro Locações" className="relative h-[380px] w-full drop-shadow-xl sm:h-[480px]" fittingType="fit"/></div>
+      <div className="relative"><div className="absolute inset-10 rounded-full bg-[#00BFFF]/10 blur-2xl"/><div className="relative overflow-hidden rounded-[2rem] shadow-2xl"><Image src="/images/real/evento-com-criancas.jpeg" alt="Crianças se divertindo em um evento atendido pela Monteiro Locações" className="h-[380px] w-full sm:h-[480px]" fittingType="fill"/><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-6 pt-20 text-white"><p className="text-sm font-bold uppercase tracking-widest text-[#6fe0ff]">Evento real</p><p className="mt-1 text-xl font-black">Diversão montada com cuidado e segurança</p></div></div></div>
     </div>
   </section>;
 }

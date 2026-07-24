@@ -1,5 +1,6 @@
 import { ArrowUpRight, Instagram, Mail, MapPin, Phone } from "lucide-react"
 import { Image } from "@/components/ui/image"
+import WhatsAppIcon from "@/components/WhatsAppIcon"
 
 const WHATSAPP = "https://wa.me/5567981396452"
 
@@ -44,8 +45,8 @@ export default function Footer() {
               href="mailto:contato@monteirolocacoes.com.br"
               className="flex items-center gap-4 rounded-2xl bg-white p-4 text-left shadow-sm transition hover:shadow-md sm:flex-col sm:p-6 sm:text-center"
             >
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00BFFF]/10 text-[#00BFFF]">
-                <Mail size={19} />
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#00BFFF] text-white shadow-[0_6px_16px_rgba(0,191,255,0.25)]">
+                <Mail size={22} strokeWidth={2.5} />
               </span>
               <span className="min-w-0">
                 <strong className="block text-gray-900">E-mail</strong>
@@ -61,7 +62,7 @@ export default function Footer() {
               className="flex items-center gap-4 rounded-2xl bg-white p-4 text-left shadow-sm transition hover:shadow-md sm:flex-col sm:p-6 sm:text-center"
             >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#25D366]/10 text-[#25D366]">
-                <Phone size={19} />
+                <WhatsAppIcon size={27} />
               </span>
               <span>
                 <strong className="block text-gray-900">WhatsApp</strong>
@@ -77,6 +78,7 @@ export default function Footer() {
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-8 py-4 font-bold text-white shadow-lg transition hover:brightness-110"
             >
+              <WhatsAppIcon size={22} white />
               Falar no WhatsApp <ArrowUpRight size={18} />
             </a>
           </div>
@@ -167,7 +169,7 @@ export default function Footer() {
                 aria-label="WhatsApp da Monteiro Locações"
                 className="grid h-11 w-11 place-items-center rounded-full bg-[#25D366] text-white transition hover:brightness-110"
               >
-                <Phone size={20} />
+                <WhatsAppIcon size={24} white />
               </a>
             </div>
           </div>
