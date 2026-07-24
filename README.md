@@ -24,6 +24,14 @@ Site institucional React/Vite com catálogo, galeria e painel administrativo em 
 
 As políticas já deixam itens ativos e imagens públicos para visitantes, e restringem criação, edição, exclusão e upload a usuários presentes em `admin_users`.
 
+## Publicação no Netlify
+
+1. Em **Site configuration > Environment variables**, adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` com os mesmos valores do arquivo `.env`. Use somente a chave **anon public** do Supabase.
+2. Faça um novo deploy depois de salvar as variáveis, pois o Vite as aplica durante a compilação.
+3. O arquivo `public/_redirects` mantém as rotas do React funcionando no Netlify. Assim, abrir diretamente `/admin` exibe o painel em vez de retornar erro 404.
+
+Mantenha a pasta `supabase` versionada no repositório: ela contém o SQL para criar as tabelas, as políticas de segurança, o bucket de imagens e os dados iniciais. O Netlify não executa esses arquivos; você os executa no SQL Editor do Supabase.
+
 ## Desenvolvimento
 
 ```bash
