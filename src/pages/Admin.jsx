@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from "lucide-react"
 import { fetchGallery, fetchProducts } from "@/lib/catalog"
 import { getImageUrl, isSupabaseConfigured, STORAGE_BUCKET, supabase } from "@/lib/supabase"
@@ -7,6 +7,7 @@ import AdminDashboard from "@/components/admin/AdminDashboard"
 const emptyProduct = { name: "", category: "", recommended_age: "Livre", size: "Consultar", allows_water: false, capacity: "Consultar", price: "", description: "", features: "", image_path: null, active: true }
 const imageExtensions = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }
 const maxImageSize = 5 * 1024 * 1024
+const productCategories = ["Infláveis", "Brinquedos", "Jogos", "Doces", "Decoração", "Estrutura", "Serviços"]
 
 /** @param {File} file @param {"products" | "gallery"} folder */
 async function uploadImage(file, folder) {
@@ -71,7 +72,18 @@ function ProductForm({ product, onSaved, onCancel }) {
   const [form, setForm] = useState(() => product ? { ...product, features: product.features.join("\n"), price: product.price ?? "" } : emptyProduct)
   const [file, setFile] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [categoryOptions, setCategoryOptions] = useState(productCategories)
+  const formRef = useRef(null)
   const field = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+  useEffect(() => {
+    const categoryField = formRef.current?.querySelectorAll("label")[1]?.querySelector("input")
+    categoryField?.setAttribute("list", "product-category-list")
+    categoryField?.setAttribute("placeholder", "Escolha ou digite uma categoria")
+    supabase?.from("products").select("category").then(({ data }) => {
+      const savedCategories = data?.map((item) => item.category).filter(Boolean) || []
+      setCategoryOptions([...new Set([...productCategories, ...savedCategories])])
+    })
+  }, [])
   const save = async (event) => {
     event.preventDefault(); setBusy(true)
     try {
@@ -87,11 +99,14 @@ function ProductForm({ product, onSaved, onCancel }) {
     } catch (error) { onSaved(`Erro ao salvar: ${error.message}`, true) } finally { setBusy(false) }
   }
   return <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-4 backdrop-blur-sm" onClick={onCancel}>
-    <form onSubmit={save} onClick={(event) => event.stopPropagation()} className="flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+    <form ref={formRef} onSubmit={save} onClick={(event) => event.stopPropagation()} className="flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] bg-white shadow-2xl">
       <header className="flex items-start justify-between border-b border-slate-100 px-6 py-5 sm:px-8"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#00BFFF]">Catálogo</p><h2 className="mt-2 text-2xl font-black text-slate-900">{product ? "Editar atração" : "Nova atração"}</h2><p className="mt-1 text-sm text-slate-500">Preencha os dados que aparecerão para seus clientes.</p></div><button type="button" onClick={onCancel} className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-xl font-medium text-slate-500 transition hover:bg-slate-200" aria-label="Fechar">×</button></header>
       <div className="grid gap-5 overflow-y-auto p-6 sm:p-8 md:grid-cols-2">{[["name", "Nome da atração"], ["category", "Categoria"], ["recommended_age", "Idade recomendada"], ["size", "Tamanho / medidas"], ["capacity", "Capacidade"]].map(([key, label]) => <label key={key} className="text-sm font-bold text-slate-700">{label}<input required value={form[key]} onChange={(event) => field(key, event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-[#00BFFF] focus:bg-white" /></label>)}<label className="text-sm font-bold text-slate-700">Preço (deixe vazio para consulta)<input type="number" min="0" step="0.01" value={form.price} onChange={(event) => field("price", event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-[#00BFFF] focus:bg-white" /></label><label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700"><input type="checkbox" checked={form.allows_water} onChange={(event) => field("allows_water", event.target.checked)} className="h-4 w-4 accent-[#00BFFF]" /> Permite uso com água</label><label className="md:col-span-2 text-sm font-bold text-slate-700">Descrição<textarea required value={form.description} onChange={(event) => field("description", event.target.value)} placeholder="Descreva a atração para o cliente" className="mt-2 min-h-28 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-[#00BFFF] focus:bg-white" /></label><label className="md:col-span-2 text-sm font-bold text-slate-700">Recursos inclusos <span className="font-medium text-slate-400">(um por linha)</span><textarea value={form.features} onChange={(event) => field("features", event.target.value)} placeholder="Ex.: Montagem inclusa" className="mt-2 min-h-28 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-[#00BFFF] focus:bg-white" /></label><label className="text-sm font-bold text-slate-700">Foto principal<input type="file" accept="image/*" onChange={(event) => setFile(event.target.files?.[0] || null)} className="mt-2 block w-full rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-sm font-medium text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#00BFFF] file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-white" /></label><div className="flex items-center gap-3">{form.image_path && <img src={getImageUrl(form.image_path)} alt="Prévia do produto" className="h-16 w-20 rounded-xl object-cover" />}<label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700"><input type="checkbox" checked={form.active} onChange={(event) => field("active", event.target.checked)} className="h-4 w-4 accent-[#00BFFF]" /> Produto ativo</label></div></div>
       <footer className="flex flex-wrap justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 sm:px-8"><button type="button" onClick={onCancel} className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600">Cancelar</button><button disabled={busy} className="rounded-xl bg-[#00BFFF] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(0,191,255,0.22)] disabled:opacity-60">{busy ? "Salvando..." : "Salvar atração"}</button></footer>
     </form>
+    <datalist id="product-category-list">
+      {categoryOptions.map((category) => <option key={category} value={category} />)}
+    </datalist>
   </div>
 }
 
@@ -105,6 +120,11 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(/** @type {boolean | null} */ (null))
   const reload = async () => { const [loadedProducts, loadedGallery] = await Promise.all([fetchProducts(true), fetchGallery(true)]); setProducts(loadedProducts); setGallery(loadedGallery) }
+  useEffect(() => {
+    if (!notice) return undefined
+    const timeout = window.setTimeout(() => setNotice(""), 3500)
+    return () => window.clearTimeout(timeout)
+  }, [notice])
   useEffect(() => { if (!supabase) return; supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false) }); const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => setSession(nextSession)); return () => listener.subscription.unsubscribe() }, [])
   useEffect(() => {
     if (!session || !supabase) { setIsAdmin(null); return }
@@ -117,7 +137,11 @@ export default function Admin() {
   useEffect(() => { if (session && isAdmin) reload().catch((error) => setNotice(`Erro ao carregar dados: ${error.message}`)) }, [session, isAdmin])
   const notify = (message, failed = false) => { setNotice(message); if (!failed) { setEditing(null); reload().catch(() => {}) } }
   const removeProduct = async (product) => { if (!window.confirm(`Excluir “${product.name}”?`)) return; const { error } = await supabase.from("products").delete().eq("id", product.id); if (error) return notify(`Erro ao excluir: ${error.message}`, true); await removeImage(product.image_path); notify("Produto excluído.") }
-  const toggleProduct = async (product) => { const { error } = await supabase.from("products").update({ active: !product.active }).eq("id", product.id); notify(error ? `Erro: ${error.message}` : "Status atualizado.", Boolean(error)) }
+  const toggleProduct = async (product) => {
+    const nextStatus = !product.active
+    const { error } = await supabase.from("products").update({ active: nextStatus }).eq("id", product.id)
+    notify(error ? `Erro: ${error.message}` : `“${product.name}” está ${nextStatus ? "ativa" : "inativa"}.`, Boolean(error))
+  }
   const uploadGallery = async (event) => { const files = [...(event.target.files || [])]; if (!files.length) return; try { await Promise.all(files.map(async (file, index) => { const imagePath = await uploadImage(file, "gallery"); const { error } = await supabase.from("gallery_images").insert({ image_path: imagePath, alt_text: file.name.replace(/\.[^.]+$/, ""), sort_order: gallery.length + index + 1 }); if (error) throw error })); notify("Fotos adicionadas.") } catch (error) { notify(`Erro no upload: ${error.message}`, true) } finally { event.target.value = "" } }
   const updateGallery = async (image, values) => { const { error } = await supabase.from("gallery_images").update(values).eq("id", image.id); notify(error ? `Erro: ${error.message}` : "Foto atualizada.", Boolean(error)) }
   const removeGallery = async (image) => { if (!window.confirm("Excluir esta foto da galeria?")) return; const { error } = await supabase.from("gallery_images").delete().eq("id", image.id); if (error) return notify(`Erro ao excluir: ${error.message}`, true); await removeImage(image.image_path); notify("Foto excluída.") }

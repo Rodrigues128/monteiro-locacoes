@@ -6,6 +6,16 @@ import { fetchProducts } from "@/lib/catalog";
 /** @typedef {import("@/lib/catalog").Product} Product */
 /** @typedef {{ onAdd: (product: Product) => void, addedIds: string[] }} CatalogProps */
 
+const catalogCategories = [
+  "Infláveis",
+  "Brinquedos",
+  "Jogos",
+  "Doces",
+  "Decoração",
+  "Estrutura",
+  "Serviços",
+];
+
 export default function Catalog(
   /** @type {CatalogProps} */ { onAdd, addedIds },
 ) {
@@ -16,7 +26,6 @@ export default function Catalog(
   const [products, setProducts] = useState(/** @type {Product[]} */ ([]));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   useEffect(() => {
     fetchProducts()
       .then(setProducts)
@@ -25,7 +34,13 @@ export default function Catalog(
   }, []);
 
   const categories = useMemo(
-    () => ["Todos", ...new Set(products.map((product) => product.category))],
+    () => [
+      "Todos",
+      ...new Set([
+        ...catalogCategories,
+        ...products.map((product) => product.category),
+      ]),
+    ],
     [products],
   );
   const visible =
@@ -74,6 +89,11 @@ export default function Catalog(
         {!loading && !error && !products.length && (
           <p className="py-14 text-center text-gray-500">
             Ainda não há atrações disponíveis no catálogo.
+          </p>
+        )}
+        {!loading && !error && products.length > 0 && !visible.length && (
+          <p className="py-10 text-center text-gray-500">
+            Nenhum item cadastrado nesta categoria.
           </p>
         )}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

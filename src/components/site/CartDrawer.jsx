@@ -1,4 +1,4 @@
-import { Calendar, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Calendar, Clock3, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 
@@ -29,6 +29,7 @@ export default function CartDrawer(
   },
 ) {
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null));
   const total = items.reduce(
     (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
@@ -59,9 +60,10 @@ export default function CartDrawer(
     const estimate = hasCustomPrice
       ? `Valor parcial dos itens com preço: R$ ${total},00. Os demais valores serão confirmados no atendimento.`
       : `Valor estimado: R$ ${total},00`;
-    const text = `Olá! Gostaria de consultar disponibilidade para ${
-      date || "uma data a combinar"
-    }:\n${list}\n${estimate}`;
+    const schedule = date
+      ? `${date}${time ? ` às ${time}` : ""}`
+      : "uma data e horário a combinar";
+    const text = `Olá! Gostaria de consultar disponibilidade para ${schedule}:\n${list}\n${estimate}`;
     window.open(
       `https://wa.me/5567981396452?text=${encodeURIComponent(text)}`,
       "_blank",
@@ -105,15 +107,23 @@ export default function CartDrawer(
           </button>
         </div>
 
-        <div className="my-6 flex items-center justify-between text-[10px] font-bold text-gray-400">
-          {["ENTREGA", "MONTAGEM", "FESTA", "RETIRADA"].map((label, index) => (
-            <span key={label} className="flex items-center gap-1">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-[#00BFFF] text-white">
-                {index + 1}
-              </span>
-              {label}
-            </span>
-          ))}
+        <div className="my-6 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-4">
+          <p className="text-xs font-black uppercase tracking-wider text-[#008fc0]">
+            Após confirmar o agendamento
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-gray-500">
+            Este é o fluxo de etapas que a Monteiro Locações organiza para o seu evento.
+          </p>
+          <div className="mt-4 grid grid-cols-4 gap-1 text-center text-[9px] font-black text-gray-500">
+            {["Entrega", "Montagem", "Festa", "Retirada"].map((label, index) => (
+              <div key={label} className="flex flex-col items-center gap-1.5">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#00BFFF] text-[10px] text-white shadow-sm">
+                  {index + 1}
+                </span>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="flex-1 space-y-3 overflow-auto">
@@ -172,19 +182,29 @@ export default function CartDrawer(
           ))}
         </div>
 
-        <label className="mt-4 text-sm font-bold text-gray-700">
-          <Calendar className="mr-2 inline" size={16} />
-          Data do evento
-        </label>
-        <input
-          type="date"
-          min={today}
-          value={date}
-          onChange={(
-            /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
-          ) => setDate(event.target.value)}
-          className="mt-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 outline-none focus:border-[#00BFFF]"
-        />
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <label className="text-sm font-bold text-gray-700">
+            <span className="mb-2 flex items-center gap-2"><Calendar size={16} className="text-[#00BFFF]" /> Data do evento</span>
+            <input
+              type="date"
+              min={today}
+              value={date}
+              onChange={(
+                /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
+              ) => setDate(event.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm outline-none focus:border-[#00BFFF]"
+            />
+          </label>
+          <label className="text-sm font-bold text-gray-700">
+            <span className="mb-2 flex items-center gap-2"><Clock3 size={16} className="text-[#00BFFF]" /> Horário</span>
+            <input
+              type="time"
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm outline-none focus:border-[#00BFFF]"
+            />
+          </label>
+        </div>
         <div className="mt-4 flex justify-between text-lg font-black text-gray-900">
           <span>Valor estimado</span>
           <span>
