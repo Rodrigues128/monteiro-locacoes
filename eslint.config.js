@@ -3,18 +3,20 @@ import pluginJs from "@eslint/js";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
+import typescriptParser from "@typescript-eslint/parser";
 
 export default [
   {
     files: [
-      "src/components/**/*.{js,mjs,cjs,jsx}",
-      "src/pages/**/*.{js,mjs,cjs,jsx}",
-      "src/Layout.jsx",
+      "src/components/**/*.{js,mjs,cjs,jsx,ts,tsx}",
+      "src/pages/**/*.{js,mjs,cjs,jsx,ts,tsx}",
+      "src/Layout.{jsx,tsx}",
     ],
     ignores: ["src/lib/**/*", "src/components/ui/**/*"],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
     languageOptions: {
+      parser: typescriptParser,
       globals: globals.browser,
       parserOptions: {
         ecmaVersion: 2022,

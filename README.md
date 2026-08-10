@@ -1,45 +1,67 @@
 # Monteiro Locações
 
-Site institucional React/Vite com catálogo, galeria e painel administrativo em `/admin`.
+Site institucional React/Vite com catálogo, galeria, painel administrativo e gestão interna de reservas.
 
 ## Requisitos
 
 - Node.js 20+
-- Um projeto no [Supabase](https://supabase.com/)
+- Projeto no [Supabase](https://supabase.com/)
+- Repositório no GitHub para aplicar migrations automaticamente
 
-## Configuração do Supabase
+## Variáveis de ambiente
 
-1. Crie um projeto no Supabase e abra **Project settings > API**.
-2. Copie a URL do projeto e a chave **anon public** para um arquivo `.env`, usando `.env.example` como modelo. Nunca use nem publique a `service_role` no frontend.
-3. No **SQL Editor**, execute [`supabase/schema.sql`](./supabase/schema.sql).
-4. Em **Authentication > Users**, crie o primeiro usuário administrador com e-mail e senha.
-5. Ainda no SQL Editor, execute, substituindo o UUID pelo ID desse usuário:
+Copie `.env.example` para `.env` e informe:
 
-   ```sql
-   insert into public.admin_users (user_id) values ('UUID_DO_USUARIO');
-   ```
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
 
-6. No bucket `catalog`, envie as imagens em `public/images` para os caminhos indicados nos comentários de [`supabase/seed.sql`](./supabase/seed.sql): `products/...` para catálogo e `gallery/...` para a galeria.
-7. Execute [`supabase/seed.sql`](./supabase/seed.sql) para importar os produtos e imagens já existentes. Execute-o uma única vez em uma base vazia.
+Use apenas a chave Publishable ou anon public no frontend. Nunca versiona `sb_secret`, `service_role`, connection string do banco ou senhas.
 
-As políticas já deixam itens ativos e imagens públicos para visitantes, e restringem criação, edição, exclusão e upload a usuários presentes em `admin_users`.
+## Banco de dados e migrations
 
-## Publicação no Netlify
+As migrations em [`supabase/migrations`](./supabase/migrations) são a fonte de verdade do banco: catálogo, galeria, RLS, Storage, clientes e reservas.
 
-1. Em **Site configuration > Environment variables**, adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` com os mesmos valores do arquivo `.env`. Use somente a chave **anon public** do Supabase.
-2. Faça um novo deploy depois de salvar as variáveis, pois o Vite as aplica durante a compilação.
-3. O arquivo `public/_redirects` mantém as rotas do React funcionando no Netlify. Assim, abrir diretamente `/admin` exibe o painel em vez de retornar erro 404.
+Para um banco vazio, instale a Supabase CLI, vincule o projeto e aplique as migrations:
 
-Mantenha a pasta `supabase` versionada no repositório: ela contém o SQL para criar as tabelas, as políticas de segurança, o bucket de imagens e os dados iniciais. O Netlify não executa esses arquivos; você os executa no SQL Editor do Supabase.
+```bash
+npx supabase login
+npx supabase link --project-ref SEU_PROJECT_REF
+npx supabase db push
+```
+
+Para um banco que já foi configurado pelo SQL Editor, siga o baseline explicado em [`supabase/README.md`](./supabase/README.md) antes de executar `db push`. Isso evita recriar tabelas e políticas existentes.
+
+O arquivo [`supabase/seed.sql`](./supabase/seed.sql) é opcional e deve ser usado somente uma vez em uma base vazia, depois de enviar as imagens ao bucket `catalog` nos caminhos correspondentes.
+
+## Automação no GitHub
+
+O workflow [`supabase-migrations.yml`](./.github/workflows/supabase-migrations.yml) executa migrations pendentes em cada push para `main` que altere `supabase/migrations/`.
+
+No GitHub, crie o secret `SUPABASE_DB_URL` com a **Direct connection string** obtida em **Supabase Dashboard > Connect > Direct connection**. Essa connection string é exclusiva da pipeline e não deve ser colocada em `.env`, no Netlify ou no código frontend.
 
 ## Segurança
 
-Depois de executar o schema, execute também [`supabase/security-hardening.sql`](./supabase/security-hardening.sql) no SQL Editor. O script reforça RLS, restringe o bucket `catalog` a imagens JPG, PNG ou WEBP de até 5 MB e limita uploads às pastas `products/` e `gallery/`.
+- RLS restringe operações administrativas aos usuários registrados em `admin_users`.
+- O bucket `catalog` aceita apenas JPG, PNG e WEBP de até 5 MB nas pastas permitidas.
+- Crie administradores apenas pelo Supabase Dashboard ou SQL; o painel não possui cadastro público.
+- Mantenha confirmação de e-mail, CAPTCHA e rate limiting habilitados no Supabase Authentication quando aplicável.
 
-- Use somente `VITE_SUPABASE_URL` e a chave **Publishable** (ou **anon public**) no Netlify. Nunca publique `sb_secret`, `service_role` ou uma senha no repositório.
-- Em **Authentication > Providers > Email**, mantenha a confirmação de e-mail ativa e habilite CAPTCHA/rate limiting se o projeto receber muitas tentativas de login.
-- Crie administradores apenas pelo Supabase Dashboard ou SQL Editor; o painel não oferece cadastro público de usuários.
-- Use uma senha única e forte para cada administrador e remova imediatamente usuários que não devem mais ter acesso em `admin_users` e Authentication.
+## Agendamentos
+
+No painel, abra **Agendamentos** e siga o fluxo:
+
+1. Cole a mensagem interna em `/admin/agendamentos`.
+2. Salve e revise os dados em `/admin/agendamentos/revisar`.
+3. Vincule os serviços, informe quantidades e confirme a reserva.
+4. Acompanhe ou altere o status em `/admin/reservas`.
+
+A confirmação é transacional no Supabase: o sistema cria ou localiza o cliente e registra a reserva com os itens. Não há integração automática com WhatsApp nesta versão.
+
+## Publicação no Netlify
+
+Em **Site configuration > Environment variables**, adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Faça um novo deploy após alterar variáveis. O arquivo `public/_redirects` mantém rotas como `/admin` funcionando diretamente.
 
 ## Desenvolvimento
 
@@ -47,8 +69,6 @@ Depois de executar o schema, execute também [`supabase/security-hardening.sql`]
 npm install
 npm run dev
 ```
-
-Abra o endereço informado pelo Vite e acesse `/admin` para fazer login. Após entrar, o painel permite cadastrar, editar, ativar/desativar e excluir produtos, enviar/substituir fotos principais e administrar as fotos da galeria.
 
 ## Verificações
 
