@@ -59,6 +59,16 @@ No painel, abra **Agendamentos** e siga o fluxo:
 
 A confirmação é transacional no Supabase: o sistema cria ou localiza o cliente e registra a reserva com os itens. Não há integração automática com WhatsApp nesta versão.
 
+## CRM administrativo
+
+Além do catálogo e da agenda, o painel possui módulos para clientes, orçamentos, financeiro, contratos, recibos, disponibilidade, estatísticas e dados da empresa. Eles usam a migration `20260812000000_crm_operations.sql` e ficam disponíveis depois de executar `npx supabase db push` (ou após a GitHub Action aplicar a migration no ambiente remoto).
+
+- **Brinquedos e catálogo:** produtos publicados no site público.
+- **Clientes:** contatos cadastrados ou criados durante a confirmação de uma reserva.
+- **Orçamentos e documentos:** propostas, contratos e recibos organizados por cliente.
+- **Financeiro:** entradas e saídas manuais da operação.
+- **Disponibilidade e estatísticas:** agenda operacional, bloqueios internos e indicadores das reservas.
+
 ## Publicação no Netlify
 
 Em **Site configuration > Environment variables**, adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Faça um novo deploy após alterar variáveis. O arquivo `public/_redirects` mantém rotas como `/admin` funcionando diretamente.

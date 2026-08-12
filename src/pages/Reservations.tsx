@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
+  Ban,
   CalendarDays,
   CheckCircle2,
   ClipboardList,
@@ -8,8 +9,12 @@ import {
   MapPin,
   Phone,
   Search,
+  TriangleAlert,
+  X,
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import AdminWorkspace from "@/components/admin/AdminWorkspace";
+import { Link } from "react-router-dom";
 
 /** @typedef {{ name?: string, document_number?: string, phone?: string }} Customer */
 /** @typedef {{ original_name: string, quantity: number, products?: { name?: string } | { name?: string }[] }} ReservationItem */
@@ -54,6 +59,36 @@ function getItemName(item) {
   return product?.name || item.original_name;
 }
 
+function StatusConfirmationModal({ action, busy, onCancel, onConfirm }) {
+  if (!action) return null;
+
+  const customer = getCustomer(action.reservation);
+  const completing = action.status === "completed";
+  const Icon = completing ? CheckCircle2 : Ban;
+  const title = completing ? "Concluir esta reserva?" : "Cancelar esta reserva?";
+  const description = completing
+    ? "O evento será marcado como concluído e continuará disponível no histórico."
+    : "A reserva será cancelada e deixará de aparecer como um evento confirmado.";
+
+  return (
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/55 p-5 backdrop-blur-sm" onClick={busy ? undefined : onCancel}>
+      <section role="dialog" aria-modal="true" aria-labelledby="reservation-status-title" onClick={(event) => event.stopPropagation()} className="w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+        <div className={`px-6 py-7 text-white sm:px-8 ${completing ? "bg-gradient-to-br from-emerald-500 to-emerald-700" : "bg-gradient-to-br from-rose-500 to-rose-700"}`}>
+          <div className="flex items-start justify-between gap-4"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20"><Icon size={24} /></span><button type="button" disabled={busy} onClick={onCancel} className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 transition hover:bg-white/25 disabled:opacity-50" aria-label="Fechar confirmação"><X size={18} /></button></div>
+          <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-white/75">Atualizar reserva</p>
+          <h2 id="reservation-status-title" className="mt-2 text-3xl font-black tracking-[-.04em]">{title}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/85">{description}</p>
+        </div>
+        <div className="space-y-5 p-6 sm:p-8">
+          <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-black uppercase tracking-wide text-slate-400">Reserva de</p><p className="mt-1 font-black text-slate-900">{customer?.name || "Cliente não identificado"}</p><p className="mt-2 text-sm font-medium text-slate-500">{new Intl.DateTimeFormat("pt-BR").format(new Date(`${action.reservation.event_date}T12:00:00`))} · {action.reservation.appointment_items?.length || 0} produtos</p></div>
+          {!completing && <div className="flex gap-3 rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm leading-relaxed text-rose-800"><TriangleAlert className="mt-0.5 shrink-0" size={18} /> Esta ação altera o status da reserva. Você poderá consultá-la no histórico depois.</div>}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" disabled={busy} onClick={onCancel} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">Voltar</button><button type="button" disabled={busy} onClick={onConfirm} className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white transition disabled:opacity-60 ${completing ? "bg-slate-950 hover:bg-slate-800" : "bg-rose-600 hover:bg-rose-700"}`}>{busy ? <LoaderCircle className="animate-spin" size={17} /> : <Icon size={17} />}{busy ? "Atualizando..." : completing ? "Concluir reserva" : "Cancelar reserva"}</button></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function Reservations() {
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(null);
@@ -62,6 +97,8 @@ export default function Reservations() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
+  const [pendingAction, setPendingAction] = useState(null);
+  const [statusBusy, setStatusBusy] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -112,9 +149,9 @@ export default function Reservations() {
     });
   }, [query, reservations, statusFilter]);
 
-  const updateStatus = async (reservation, status) => {
+  const performStatusUpdate = async (reservation, status) => {
     const label = statusLabels[status] || status;
-    if (!window.confirm(`Alterar o status desta reserva para “${label}”?`)) return;
+    setStatusBusy(true);
     try {
       const { error } = await supabase.from("appointments").update({ status }).eq("id", reservation.id);
       if (error) throw error;
@@ -122,22 +159,25 @@ export default function Reservations() {
       load();
     } catch (error) {
       setNotice(`Não foi possível atualizar o status: ${error.message}`);
+    } finally {
+      setStatusBusy(false);
+      setPendingAction(null);
     }
   };
 
   if (!isSupabaseConfigured) return <main className="grid min-h-screen place-items-center p-5">Configure o Supabase para usar as reservas.</main>;
-  if (!session) return <main className="grid min-h-screen place-items-center p-5"><a href="/admin" className="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Entre no painel administrativo primeiro</a></main>;
+  if (!session) return <main className="grid min-h-screen place-items-center p-5"><Link to="/admin" className="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Entre no painel administrativo primeiro</Link></main>;
   if (isAdmin === null) return <main className="grid min-h-screen place-items-center">Verificando permissões...</main>;
   if (!isAdmin) return <main className="grid min-h-screen place-items-center p-5">Acesso restrito a administradores.</main>;
 
   return (
-    <main className="min-h-screen bg-[#f3f8fa] px-5 py-8 text-slate-900 sm:p-10">
+    <AdminWorkspace>
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <a href="/admin" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008fc0]"><ArrowLeft size={16} /> Voltar ao painel</a>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+          <Link to="/admin" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008fc0]"><ArrowLeft size={16} /> Voltar ao painel</Link>
           <div className="flex items-center gap-3">
-            <a href="/admin/agendamentos/revisar" className="text-sm font-bold text-[#008fc0]">Revisar mensagens</a>
-            <a href="/admin/agendamentos" className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white">Importar mensagem</a>
+            <Link to="/admin/agendamentos/revisar" className="text-sm font-bold text-[#008fc0]">Revisar mensagens</Link>
+            <Link to="/admin/agendamentos" className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white">Importar mensagem</Link>
           </div>
         </div>
 
@@ -201,8 +241,8 @@ export default function Reservations() {
                     </div>
                     <div className="flex items-center justify-between gap-4 xl:block xl:text-right">
                       <p className="text-lg font-black">{formatMoney(reservation.total_amount)}</p>
-                      {canComplete && <button onClick={() => updateStatus(reservation, "completed")} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><CheckCircle2 size={15} /> Concluir</button>}
-                      {reservation.status === "confirmed" && <button onClick={() => updateStatus(reservation, "cancelled")} className="mt-3 block text-xs font-bold text-rose-600">Cancelar reserva</button>}
+                      {canComplete && <button onClick={() => setPendingAction({ reservation, status: "completed" })} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><CheckCircle2 size={15} /> Concluir</button>}
+                      {reservation.status === "confirmed" && <button onClick={() => setPendingAction({ reservation, status: "cancelled" })} className="mt-3 block text-xs font-bold text-rose-600">Cancelar reserva</button>}
                     </div>
                   </div>
                 </article>
@@ -211,6 +251,7 @@ export default function Reservations() {
           </div>
         )}
       </div>
-    </main>
+      <StatusConfirmationModal action={pendingAction} busy={statusBusy} onCancel={() => setPendingAction(null)} onConfirm={() => performStatusUpdate(pendingAction.reservation, pendingAction.status)} />
+    </AdminWorkspace>
   );
 }

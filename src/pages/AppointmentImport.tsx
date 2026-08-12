@@ -12,6 +12,8 @@ import {
   parseAppointmentMessage,
 } from "@/lib/appointmentParser";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import AdminWorkspace from "@/components/admin/AdminWorkspace";
+import { Link } from "react-router-dom";
 
 const example = `🎡 DADOS PARA AGENDAMENTO 🎡
 
@@ -209,12 +211,12 @@ export default function AppointmentImport() {
   if (!session)
     return (
       <main className="grid min-h-screen place-items-center p-5 text-center">
-        <a
-          href="/admin"
+        <Link
+          to="/admin"
           className="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white"
         >
           Entre no painel administrativo primeiro
-        </a>
+        </Link>
       </main>
     );
   if (isAdmin === null)
@@ -230,14 +232,14 @@ export default function AppointmentImport() {
       </main>
     );
   return (
-    <main className="min-h-screen bg-[#f3f8fa] px-5 py-8 text-slate-900 sm:p-10">
+    <AdminWorkspace>
       <div className="mx-auto max-w-6xl">
-        <a
-          href="/admin"
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008fc0]"
+        <Link
+          to="/admin"
+          className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008fc0]"
         >
           <ArrowLeft size={16} /> Voltar ao painel
-        </a>
+        </Link>
         <header className="mt-8 max-w-2xl">
           <p className="text-xs font-black uppercase tracking-[.2em] text-[#00BFFF]">
             Agendamentos
@@ -249,11 +251,16 @@ export default function AppointmentImport() {
             Cole a mensagem enviada ao grupo interno. O sistema organiza os
             dados, mas ainda exige revisão antes de criar o agendamento.
           </p>
-          <a href="/admin/agendamentos/revisar" className="mt-4 inline-flex text-sm font-bold text-[#008fc0]">
+          <Link to="/admin/agendamentos/revisar" className="mt-4 inline-flex text-sm font-bold text-[#008fc0]">
             Ver fila de revisão →
-          </a>
+          </Link>
         </header>
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+        <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold">
+          <span className="rounded-full bg-slate-950 px-3 py-1.5 text-white">1. Importar mensagem</span>
+          <span className="rounded-full bg-white px-3 py-1.5 text-slate-500">2. Revisar dados e produtos</span>
+          <span className="rounded-full bg-white px-3 py-1.5 text-slate-500">3. Confirmar reserva</span>
+        </div>
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-black">Mensagem original</h2>
@@ -322,6 +329,6 @@ export default function AppointmentImport() {
           )}
         </div>
       </div>
-    </main>
+    </AdminWorkspace>
   );
 }

@@ -11,6 +11,8 @@ import {
 import { reviewIssues, suggestProduct } from "@/lib/appointmentMatching";
 import { normalizeText } from "@/lib/appointmentParser";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import AdminWorkspace from "@/components/admin/AdminWorkspace";
+import { Link } from "react-router-dom";
 
 /** @typedef {{ id: string, name: string, active: boolean }} Product */
 /** @typedef {{ product_id: string, normalized_alias: string }} ProductAlias */
@@ -27,6 +29,58 @@ type FieldProps = {
   type?: string;
   min?: number;
 };
+
+type ConfirmationModalProps = {
+  open: boolean;
+  busy: boolean;
+  customerName: string;
+  eventDate?: string;
+  totalAmount?: number | null;
+  items: Array<{ name: string; quantity: number }>;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+function formatMoney(value?: number | null) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value || 0);
+}
+
+function ConfirmationModal({ open, busy, customerName, eventDate, totalAmount, items, onCancel, onConfirm }: ConfirmationModalProps) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/55 p-5 backdrop-blur-sm" onClick={busy ? undefined : onCancel}>
+      <section role="dialog" aria-modal="true" aria-labelledby="confirm-reservation-title" onClick={(event) => event.stopPropagation()} className="w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+        <div className="bg-gradient-to-br from-[#00BFFF] to-[#008fc0] px-6 py-7 text-white sm:px-8">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20"><CalendarCheck2 size={24} /></span>
+          <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-white/75">Confirmação de reserva</p>
+          <h2 id="confirm-reservation-title" className="mt-2 text-3xl font-black tracking-[-.04em]">Tudo pronto para confirmar?</h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/85">A reserva será registrada na agenda e ficará disponível para sua equipe acompanhar.</p>
+        </div>
+
+        <div className="space-y-5 p-6 sm:p-8">
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-400">Cliente</p>
+            <p className="mt-1 font-black text-slate-900">{customerName || "Cliente não identificado"}</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">{eventDate || "Data a definir"} · {items.length} {items.length === 1 ? "produto" : "produtos"}</p>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between gap-4"><p className="text-sm font-black text-slate-800">Itens da reserva</p><p className="text-lg font-black text-slate-900">{formatMoney(totalAmount)}</p></div>
+            <div className="mt-3 max-h-36 space-y-2 overflow-y-auto pr-1">
+              {items.map((item, index) => <div key={`${item.name}-${index}`} className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-3 py-2.5"><span className="truncate text-sm font-bold text-slate-700">{item.name}</span><span className="shrink-0 rounded-lg bg-cyan-50 px-2 py-1 text-xs font-black text-cyan-800">{item.quantity}×</span></div>)}
+            </div>
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" disabled={busy} onClick={onCancel} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">Continuar revisando</button>
+            <button type="button" disabled={busy} onClick={onConfirm} className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-60">{busy ? <LoaderCircle className="animate-spin" size={17} /> : <CalendarCheck2 size={17} />}{busy ? "Confirmando..." : "Confirmar reserva"}</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
 
 function Field({ label, value, onChange, type = "text", min }: FieldProps) {
   return (
@@ -98,12 +152,14 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
   const [productToAdd, setProductToAdd] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     setDraft(message.extracted_data || {});
     setItems(message.appointment_message_items || []);
     setProductToAdd("");
     setNotice("");
+    setConfirming(false);
   }, [message]);
 
   const issues = useMemo(() => reviewIssues(draft, items), [draft, items]);
@@ -218,7 +274,6 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
   };
 
   const confirm = async () => {
-    if (!window.confirm("Confirmar esta reserva? O cliente e os itens serão registrados no painel.")) return;
     setBusy(true);
     setNotice("");
     try {
@@ -237,6 +292,7 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
       setNotice(`Não foi possível confirmar: ${error.message}`);
     } finally {
       setBusy(false);
+      setConfirming(false);
     }
   };
 
@@ -268,8 +324,8 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
         <p className="text-xs font-black uppercase tracking-[.18em] text-[#00BFFF]">
           Produtos do catalogo
         </p>
-        <h3 className="font-black">Serviços da mensagem</h3>
-        <p className="mt-1 text-sm text-slate-500">Vincule cada serviço a um produto e informe a quantidade.</p>
+        <h3 className="font-black">Produtos da reserva</h3>
+        <p className="mt-1 text-sm text-slate-500">Vincule cada produto identificado na mensagem e informe a quantidade.</p>
         <div className="mt-4 space-y-3">
           {items.map((item) => (
             <div key={item.id} className="grid gap-3 rounded-2xl bg-slate-50 p-4 md:grid-cols-[1fr_110px_1.2fr]">
@@ -334,11 +390,21 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
         <button disabled={busy} onClick={save} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white disabled:opacity-60">
           {busy ? <LoaderCircle className="animate-spin" size={17} /> : <Save size={17} />} Salvar revisão
         </button>
-        <button disabled={busy || issues.length > 0} onClick={confirm} className="inline-flex items-center gap-2 rounded-xl bg-[#00BFFF] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
+        <button disabled={busy || issues.length > 0} onClick={() => setConfirming(true)} className="inline-flex items-center gap-2 rounded-xl bg-[#00BFFF] px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
           <CalendarCheck2 size={17} /> Confirmar reserva
         </button>
         {notice && <p className="text-sm font-semibold text-slate-600">{notice}</p>}
       </div>
+      <ConfirmationModal
+        open={confirming}
+        busy={busy}
+        customerName={draft.client?.name || ""}
+        eventDate={draft.event?.date}
+        totalAmount={draft.total_amount}
+        items={items.map((item) => ({ name: products.find((product) => product.id === item.product_id)?.name || item.original_name, quantity: item.quantity || 1 }))}
+        onCancel={() => setConfirming(false)}
+        onConfirm={confirm}
+      />
     </section>
   );
 }
@@ -392,16 +458,16 @@ export default function AppointmentReview() {
   }, [isAdmin]);
 
   if (!isSupabaseConfigured) return <main className="grid min-h-screen place-items-center p-5">Configure o Supabase para usar a fila.</main>;
-  if (!session) return <main className="grid min-h-screen place-items-center p-5"><a href="/admin" className="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Entre no painel administrativo primeiro</a></main>;
+  if (!session) return <main className="grid min-h-screen place-items-center p-5"><Link to="/admin" className="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Entre no painel administrativo primeiro</Link></main>;
   if (isAdmin === null) return <main className="grid min-h-screen place-items-center">Verificando permissões...</main>;
   if (!isAdmin) return <main className="grid min-h-screen place-items-center p-5">Acesso restrito a administradores.</main>;
 
   return (
-    <main className="min-h-screen bg-[#f3f8fa] px-5 py-8 text-slate-900 sm:p-10">
+    <AdminWorkspace>
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <a href="/admin/agendamentos" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008fc0]"><ArrowLeft size={16} /> Importar outra mensagem</a>
-          <a href="/admin/reservas" className="text-sm font-bold text-[#008fc0]">Ver reservas confirmadas →</a>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+          <Link to="/admin/agendamentos" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008fc0]"><ArrowLeft size={16} /> Importar outra mensagem</Link>
+          <Link to="/admin/reservas" className="text-sm font-bold text-[#008fc0]">Ver reservas confirmadas →</Link>
         </div>
         <header className="mt-8">
           <p className="text-xs font-black uppercase tracking-[.2em] text-[#00BFFF]">Agendamentos</p>
@@ -413,12 +479,12 @@ export default function AppointmentReview() {
             <MessageList messages={messages} selectedId={selected?.id} onSelect={setSelected} />
             {selected ? <Editor message={selected} products={products} aliases={aliases} onSaved={load} onConfirmed={load} /> : (
               <section className="grid min-h-80 place-items-center rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
-                <div><ClipboardList className="mx-auto text-[#00BFFF]" size={32} /><h2 className="mt-4 text-xl font-black">Fila vazia</h2><p className="mt-2 text-slate-500">Importe uma mensagem para começar a revisão.</p><a href="/admin/agendamentos" className="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Importar mensagem</a></div>
+            <div><ClipboardList className="mx-auto text-[#00BFFF]" size={32} /><h2 className="mt-4 text-xl font-black">Fila vazia</h2><p className="mt-2 text-slate-500">Importe uma mensagem para começar a revisão.</p><Link to="/admin/agendamentos" className="mt-5 inline-flex rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white">Importar mensagem</Link></div>
               </section>
             )}
           </div>
         )}
       </div>
-    </main>
+    </AdminWorkspace>
   );
 }

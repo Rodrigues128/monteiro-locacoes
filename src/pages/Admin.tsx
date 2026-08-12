@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
-  CalendarDays,
   Eye,
   EyeOff,
+  LoaderCircle,
   LockKeyhole,
   Mail,
   ShieldCheck,
+  Trash2,
+  X,
 } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { fetchGallery, fetchProducts } from "@/lib/catalog";
 import {
   getImageUrl,
@@ -47,6 +50,11 @@ const productCategories = [
   "Serviços",
 ];
 
+function getInitialTab() {
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return tab === "products" || tab === "gallery" ? tab : "overview";
+}
+
 /** @param {File} file @param {"products" | "gallery"} folder */
 async function uploadImage(file, folder) {
   if (!supabase) throw new Error("Supabase não configurado.");
@@ -76,6 +84,32 @@ function Notice(/** @type {NoticeProps} */ { message }) {
       {message}
     </p>
   ) : null;
+}
+
+function DeleteConfirmation({ target, busy, onCancel, onConfirm }) {
+  if (!target) return null;
+  const product = target.type === "product";
+  const title = product ? `Excluir “${target.item.name}”?` : "Excluir esta foto da galeria?";
+  const description = product
+    ? "A atração será removida do catálogo e não aparecerá mais para seus clientes."
+    : "A imagem será removida da galeria pública e do armazenamento do projeto.";
+
+  return (
+    <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/55 p-5 backdrop-blur-sm" onClick={busy ? undefined : onCancel}>
+      <section role="dialog" aria-modal="true" aria-labelledby="delete-title" onClick={(event) => event.stopPropagation()} className="w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+        <header className="bg-gradient-to-br from-rose-500 to-rose-700 px-6 py-7 text-white sm:px-8">
+          <div className="flex items-start justify-between gap-4"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20"><Trash2 size={23} /></span><button type="button" disabled={busy} onClick={onCancel} className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 transition hover:bg-white/25 disabled:opacity-50" aria-label="Fechar confirmação"><X size={18} /></button></div>
+          <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-white/75">Ação permanente</p>
+          <h2 id="delete-title" className="mt-2 text-3xl font-black tracking-[-.04em]">{title}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/85">{description}</p>
+        </header>
+        <div className="p-6 sm:p-8">
+          <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm leading-relaxed text-rose-800">Esta ação não pode ser desfeita. Confira o item antes de continuar.</div>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" disabled={busy} onClick={onCancel} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">Voltar</button><button type="button" disabled={busy} onClick={onConfirm} className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-700 disabled:opacity-60">{busy ? <LoaderCircle size={17} className="animate-spin" /> : <Trash2 size={17} />}{busy ? "Excluindo..." : "Excluir definitivamente"}</button></div>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 /** @typedef {{ onLogin: () => void }} LoginProps */
@@ -461,27 +495,49 @@ function ProductForm(
 }
 
 export default function Admin() {
+  const { search } = useLocation();
   const [session, setSession] = useState(null);
   const [products, setProducts] = useState([]);
   const [gallery, setGallery] = useState([]);
+  const [reservations, setReservations] = useState([]);
+  const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState("");
-  const [tab, setTab] = useState("products");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [tab, setTab] = useState(getInitialTab);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(/** @type {boolean | null} */ (null));
   const reload = async () => {
-    const [loadedProducts, loadedGallery] = await Promise.all([
+    const [loadedProducts, loadedGallery, loadedReservations, pendingMessages] = await Promise.all([
       fetchProducts(true),
       fetchGallery(true),
+      supabase
+        .from("appointments")
+        .select("id, event_date, start_time, end_time, address, venue_type, total_amount, status, customers(id, name, phone), appointment_items(quantity, original_name, products(name))")
+        .in("status", ["confirmed", "completed"])
+        .order("event_date", { ascending: true }),
+      supabase
+        .from("appointment_messages")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["pending_review", "ready_to_confirm"]),
     ]);
+    if (loadedReservations.error) throw loadedReservations.error;
+    if (pendingMessages.error) throw pendingMessages.error;
     setProducts(loadedProducts);
     setGallery(loadedGallery);
+    setReservations(loadedReservations.data || []);
+    setPendingReviewCount(pendingMessages.count || 0);
   };
   useEffect(() => {
     if (!notice) return undefined;
     const timeout = window.setTimeout(() => setNotice(""), 3500);
     return () => window.clearTimeout(timeout);
   }, [notice]);
+  useEffect(() => {
+    const nextTab = new URLSearchParams(search).get("tab");
+    setTab(nextTab === "products" || nextTab === "gallery" ? nextTab : "overview");
+  }, [search]);
   useEffect(() => {
     if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
@@ -526,7 +582,6 @@ export default function Admin() {
     }
   };
   const removeProduct = async (product) => {
-    if (!window.confirm(`Excluir “${product.name}”?`)) return;
     const { error } = await supabase
       .from("products")
       .delete()
@@ -583,7 +638,6 @@ export default function Admin() {
     );
   };
   const removeGallery = async (image) => {
-    if (!window.confirm("Excluir esta foto da galeria?")) return;
     const { error } = await supabase
       .from("gallery_images")
       .delete()
@@ -591,6 +645,17 @@ export default function Admin() {
     if (error) return notify(`Erro ao excluir: ${error.message}`, true);
     await removeImage(image.image_path);
     notify("Foto excluída.");
+  };
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      if (deleteTarget.type === "product") await removeProduct(deleteTarget.item);
+      else await removeGallery(deleteTarget.item);
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
+    }
   };
   if (!isSupabaseConfigured)
     return (
@@ -648,6 +713,8 @@ export default function Admin() {
       <AdminDashboard
         products={products}
         gallery={gallery}
+        reservations={reservations}
+        pendingReviewCount={pendingReviewCount}
         tab={tab}
         setTab={setTab}
         setEditing={setEditing}
@@ -662,17 +729,12 @@ export default function Admin() {
         }
         onSignOut={() => supabase.auth.signOut()}
         onToggleProduct={toggleProduct}
-        onRemoveProduct={removeProduct}
+        onRemoveProduct={(product) => setDeleteTarget({ type: "product", item: product })}
         onUploadGallery={uploadGallery}
         onUpdateGallery={updateGallery}
-        onRemoveGallery={removeGallery}
+        onRemoveGallery={(image) => setDeleteTarget({ type: "gallery", item: image })}
       />
-      <a
-        href="/admin/agendamentos"
-        className="fixed bottom-5 left-5 z-40 inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white shadow-xl transition hover:bg-slate-800 sm:left-8"
-      >
-        <CalendarDays size={18} /> Agendamentos
-      </a>
+      <DeleteConfirmation target={deleteTarget} busy={deleting} onCancel={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
       <Notice message={notice} />
     </>
   );
