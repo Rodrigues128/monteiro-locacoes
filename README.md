@@ -39,7 +39,7 @@ O arquivo [`supabase/seed.sql`](./supabase/seed.sql) é opcional e deve ser usad
 
 O workflow [`supabase-migrations.yml`](./.github/workflows/supabase-migrations.yml) executa migrations pendentes em cada push para `main` que altere `supabase/migrations/`.
 
-No GitHub, crie o secret `SUPABASE_DB_URL` com a **Direct connection string** obtida em **Supabase Dashboard > Connect > Direct connection**. Essa connection string é exclusiva da pipeline e não deve ser colocada em `.env`, no Netlify ou no código frontend.
+No GitHub, crie o secret `SUPABASE_DB_URL` com a connection string obtida em **Supabase Dashboard > Connect**. Prefira **Direct connection** quando a conexão suportar IPv6; caso contrário, use **Session pooler**, que é a alternativa para redes IPv4. Essa connection string é exclusiva da pipeline e não deve ser colocada em `.env`, no Netlify ou no código frontend.
 
 ## Segurança
 

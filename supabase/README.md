@@ -27,6 +27,6 @@ npx supabase db push
 
 ## GitHub Actions
 
-Defina o secret `SUPABASE_DB_URL` no repositório GitHub com a connection string direta do banco, obtida em **Supabase Dashboard > Connect > Direct connection**. A pipeline em `.github/workflows/supabase-migrations.yml` executa `supabase db push` a cada alteração em `main` dentro de `supabase/migrations/`.
+Defina o secret `SUPABASE_DB_URL` no repositório GitHub com a connection string do banco, obtida em **Supabase Dashboard > Connect**. Prefira **Direct connection** em redes com IPv6; para redes IPv4, use **Session pooler**. A pipeline em `.github/workflows/supabase-migrations.yml` executa `supabase db push` a cada alteração em `main` dentro de `supabase/migrations/`.
 
 Não use a chave Publishable, `sb_secret` ou `service_role` nesse secret. A migration precisa da connection string PostgreSQL com permissões administrativas.
