@@ -9,6 +9,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { reviewIssues, suggestProduct } from "@/lib/appointmentMatching";
+import { normalizeText } from "@/lib/appointmentParser";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 /** @typedef {{ id: string, name: string, active: boolean }} Product */
@@ -94,12 +95,14 @@ function MessageList(/** @type {MessageListProps} */ { messages, selectedId, onS
 function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved, onConfirmed }) {
   const [draft, setDraft] = useState(/** @type {AppointmentDraft} */ (message.extracted_data || {}));
   const [items, setItems] = useState(/** @type {MessageItem[]} */ (message.appointment_message_items || []));
+  const [productToAdd, setProductToAdd] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
     setDraft(message.extracted_data || {});
     setItems(message.appointment_message_items || []);
+    setProductToAdd("");
     setNotice("");
   }, [message]);
 
@@ -139,6 +142,41 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
       const suggestion = suggestProduct(item.original_name, products, aliases);
       return { ...item, ...suggestion, needs_review: !suggestion.product_id };
     }));
+  };
+
+  const addProduct = async () => {
+    const product = products.find((item) => item.id === productToAdd);
+    if (!product) {
+      setNotice("Escolha um produto do catalogo para adicionar.");
+      return;
+    }
+
+    setBusy(true);
+    setNotice("");
+    try {
+      const { data, error } = await supabase
+        .from("appointment_message_items")
+        .insert({
+          message_id: message.id,
+          original_name: product.name,
+          normalized_name: normalizeText(product.name),
+          product_id: product.id,
+          quantity: 1,
+          match_type: "manual",
+          confidence: 1,
+          needs_review: false,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      setItems((current) => [...current, data]);
+      setProductToAdd("");
+      setNotice("Produto adicionado a reserva.");
+    } catch (error) {
+      setNotice(`Nao foi possivel adicionar o produto: ${error.message}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const persistReview = async () => {
@@ -227,6 +265,9 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
       </div>
 
       <div className="mt-8 border-t border-slate-100 pt-6">
+        <p className="text-xs font-black uppercase tracking-[.18em] text-[#00BFFF]">
+          Produtos do catalogo
+        </p>
         <h3 className="font-black">Serviços da mensagem</h3>
         <p className="mt-1 text-sm text-slate-500">Vincule cada serviço a um produto e informe a quantidade.</p>
         <div className="mt-4 space-y-3">
@@ -248,6 +289,31 @@ function Editor(/** @type {EditorProps} */ { message, products, aliases, onSaved
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-dashed border-slate-300 bg-white p-4">
+        <label className="min-w-60 flex-1 text-sm font-bold text-slate-700">
+          Adicionar produto a reserva
+          <select
+            value={productToAdd}
+            onChange={(event) => setProductToAdd(event.target.value)}
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#00BFFF]"
+          >
+            <option value="">Escolha um produto do catalogo</option>
+            {products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}{product.active ? "" : " (inativo)"}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          disabled={busy || !productToAdd}
+          onClick={addProduct}
+          className="rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-2.5 text-sm font-bold text-[#008fc0] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Adicionar produto
+        </button>
       </div>
 
       {issues.length > 0 && (

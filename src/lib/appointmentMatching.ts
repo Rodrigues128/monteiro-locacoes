@@ -25,5 +25,23 @@ export function reviewIssues(data, items) {
   if (data.total_amount !== null && data.total_amount !== undefined && Number(data.total_amount) < 0) {
     issues.push({ field: "valor", message: "O valor total não pode ser negativo." });
   }
-  return issues;
+  return issues.map((issue) => {
+    if (issue.field === "servicos") {
+      return {
+        ...issue,
+        field: "produtos",
+        message: issue.message.startsWith("Vincule")
+          ? "Vincule todos os itens aos produtos do catalogo antes de confirmar."
+          : "Informe ao menos um produto.",
+      };
+    }
+    if (issue.field === "servicos.quantidade") {
+      return {
+        ...issue,
+        field: "produtos.quantidade",
+        message: "Informe uma quantidade valida para cada produto.",
+      };
+    }
+    return issue;
+  });
 }

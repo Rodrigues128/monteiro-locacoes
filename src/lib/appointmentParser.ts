@@ -42,7 +42,7 @@ function amount(value) {
 }
 
 function services(lines) {
-  const start = lines.findIndex((line) => /^servico\s*:\s*$/i.test(normalizeText(clean(line))));
+  const start = lines.findIndex((line) => /^(?:servicos?|produtos?|itens)(?:\s+(?:do|da)\s+(?:festa|reserva|mensagem|evento))?\s*:\s*(?:.*)?$/i.test(normalizeText(clean(line))));
   if (start < 0) return [];
   const found = [];
   for (const line of lines.slice(start + 1)) {
