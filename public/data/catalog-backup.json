@@ -1,0 +1,226 @@
+{
+  "generatedAt": "2026-08-26T13:42:17.612Z",
+  "products": [
+    {
+      "id": "c32b90ed-e01a-4692-845b-cf159adacc31",
+      "name": "Pebolim",
+      "category": "Jogos",
+      "age": "Livre",
+      "size": "Consultar",
+      "wet": false,
+      "capacity": "Uso alternado",
+      "price": null,
+      "image": "/images/real/pebolim-real.jpeg",
+      "fallbackImage": "/images/real/pebolim-real.jpeg",
+      "imagePath": null,
+      "description": "Partidas rápidas e muita diversão para completar a área de jogos da festa.",
+      "features": [
+        "Mesa completa",
+        "Montagem no local",
+        "Diversão para várias idades",
+        "Disponibilidade sob consulta"
+      ],
+      "active": true
+    },
+    {
+      "id": "d95b9c75-2561-4160-b952-6a52e25015f9",
+      "name": "Tobogã Aventura",
+      "category": "Infláveis",
+      "age": "4+",
+      "size": "8 × 4 m",
+      "wet": true,
+      "capacity": "8 crianças",
+      "price": 550,
+      "image": "/images/real/toboga-real.jpeg",
+      "fallbackImage": "/images/real/toboga-real.jpeg",
+      "imagePath": null,
+      "description": "Uma atração de grande impacto para transformar a festa em uma aventura inesquecível.",
+      "features": [
+        "Estrutura inflável reforçada",
+        "Escada de acesso com degraus",
+        "Piscina de amortecimento",
+        "Montagem e desmontagem inclusas"
+      ],
+      "active": true
+    },
+    {
+      "id": "aa7953f4-4df5-42f8-8f1c-4e681147bb9d",
+      "name": "Arco de Balões",
+      "category": "Decoração",
+      "age": "Livre",
+      "size": "3 × 2,5 m",
+      "wet": false,
+      "capacity": "Personalizado",
+      "price": 200,
+      "image": "/images/arco-baloes.png",
+      "fallbackImage": "/images/arco-baloes.png",
+      "imagePath": null,
+      "description": "Composição orgânica personalizada para valorizar a entrada ou mesa principal.",
+      "features": [
+        "Balões premium",
+        "Cores personalizadas",
+        "Montagem no local",
+        "Composição orgânica"
+      ],
+      "active": true
+    },
+    {
+      "id": "14c3265d-2477-44a9-a2ed-27bf99d5aba9",
+      "name": "Piscina de Bolinhas",
+      "category": "Brinquedos",
+      "age": "2+",
+      "size": "3 × 3 m",
+      "wet": false,
+      "capacity": "8 crianças",
+      "price": 220,
+      "image": "/images/real/piscina-bolinhas-real.jpeg",
+      "fallbackImage": "/images/real/piscina-bolinhas-real.jpeg",
+      "imagePath": null,
+      "description": "Diversão segura para os pequenos, com cores vibrantes e acabamento impecável.",
+      "features": [
+        "Bolinhas coloridas",
+        "Estrutura protegida por rede",
+        "Ideal para crianças pequenas",
+        "Higienização completa"
+      ],
+      "active": true
+    },
+    {
+      "id": "85de3080-ba69-4872-a55c-cf9cc9869aa9",
+      "name": "Kit Mesas & Cadeiras",
+      "category": "Estrutura",
+      "age": "Livre",
+      "size": "Sob medida",
+      "wet": false,
+      "capacity": "Personalizado",
+      "price": 69,
+      "image": "/images/real/mesas-cadeiras-real.jpeg",
+      "fallbackImage": "/images/real/mesas-cadeiras-real.jpeg",
+      "imagePath": null,
+      "description": "Conjuntos para receber seus convidados com praticidade, organização e conforto.",
+      "features": [
+        "Mesas e cadeiras resistentes",
+        "Quantidade personalizada",
+        "Entrega organizada",
+        "Montagem sob consulta"
+      ],
+      "active": true
+    },
+    {
+      "id": "299ab371-3625-4db4-af22-c2f8e9b01518",
+      "name": "Mesa de Sinuca",
+      "category": "Jogos",
+      "age": "Livre",
+      "size": "Consultar",
+      "wet": false,
+      "capacity": "Uso alternado",
+      "price": null,
+      "image": "/images/real/sinuca-real.jpeg",
+      "fallbackImage": "/images/real/sinuca-real.jpeg",
+      "imagePath": null,
+      "description": "Uma opção clássica para divertir jovens e adultos durante todo o evento.",
+      "features": [
+        "Tacos e bolas inclusos",
+        "Montagem no local",
+        "Ideal para confraternizações",
+        "Disponibilidade sob consulta"
+      ],
+      "active": true
+    },
+    {
+      "id": "f1e8cb93-799c-42f3-a13e-857c40ef9721",
+      "name": "Aero Hockey",
+      "category": "Jogos",
+      "age": "Livre",
+      "size": "Consultar",
+      "wet": false,
+      "capacity": "Uso alternado",
+      "price": null,
+      "image": "/images/real/aero-hockey-real.jpeg",
+      "fallbackImage": "/images/real/aero-hockey-real.jpeg",
+      "imagePath": null,
+      "description": "Uma atração dinâmica para deixar a área de jogos ainda mais animada.",
+      "features": [
+        "Acessórios inclusos",
+        "Montagem no local",
+        "Ideal para eventos e festas",
+        "Disponibilidade sob consulta"
+      ],
+      "active": true
+    }
+  ],
+  "gallery": [
+    {
+      "id": "4fc1ad5e-eda2-4310-9bae-d10a0b52aae1",
+      "image": "/images/real/evento-com-criancas.jpeg",
+      "fallbackImage": "/images/real/evento-com-criancas.jpeg",
+      "image_path": null,
+      "alt_text": "Crianças brincando no pula-pula em um evento atendido pela Monteiro Locações",
+      "sort_order": 1,
+      "active": true
+    },
+    {
+      "id": "0c46b2e7-d6ee-413d-a35c-3e0fa5659a50",
+      "image": "/images/real/montagem-completa-real.jpeg",
+      "fallbackImage": "/images/real/montagem-completa-real.jpeg",
+      "image_path": null,
+      "alt_text": "Montagem completa com brinquedos e estrutura para festa",
+      "sort_order": 2,
+      "active": true
+    },
+    {
+      "id": "19bfdc0a-56a8-4a0e-9c21-4b4ed6a6e50e",
+      "image": "/images/real/recreacao-real.jpeg",
+      "fallbackImage": "/images/real/recreacao-real.jpeg",
+      "image_path": null,
+      "alt_text": "Espaço de recreação preparado pela Monteiro Locações",
+      "sort_order": 3,
+      "active": true
+    },
+    {
+      "id": "d5e38cec-af7d-48f5-851d-5a48a9deb7e1",
+      "image": "/images/real/mesas-cadeiras-real.jpeg",
+      "fallbackImage": "/images/real/mesas-cadeiras-real.jpeg",
+      "image_path": null,
+      "alt_text": "Mesas e cadeiras organizadas para receber os convidados",
+      "sort_order": 4,
+      "active": true
+    },
+    {
+      "id": "802b0968-48ad-4112-9e4f-43ecbad74abf",
+      "image": "/images/real/sinuca-real.jpeg",
+      "fallbackImage": "/images/real/sinuca-real.jpeg",
+      "image_path": null,
+      "alt_text": "Mesa de sinuca instalada em uma confraternização",
+      "sort_order": 5,
+      "active": true
+    },
+    {
+      "id": "f2660fef-5c88-48fb-b1a4-b0e41b5acaec",
+      "image": "/images/real/piscina-bolinhas-real.jpeg",
+      "fallbackImage": "/images/real/piscina-bolinhas-real.jpeg",
+      "image_path": null,
+      "alt_text": "Piscina de bolinhas montada para uma festa infantil",
+      "sort_order": 6,
+      "active": true
+    },
+    {
+      "id": "a2dc7be1-c6af-49cf-8f42-4efa3b333f6e",
+      "image": "/backup-images/03eb82fbee5512f2.jpeg",
+      "fallbackImage": "/backup-images/03eb82fbee5512f2.jpeg",
+      "image_path": null,
+      "alt_text": "WhatsApp Image 2026-07-23 at 18.27.41 (2)",
+      "sort_order": 7,
+      "active": true
+    },
+    {
+      "id": "d5825059-16db-414e-b0ac-eae5bfd9538f",
+      "image": "/backup-images/24dd7ae2367ca5ea.jpg",
+      "fallbackImage": "/backup-images/24dd7ae2367ca5ea.jpg",
+      "image_path": null,
+      "alt_text": "WhatsApp Image 2026-07-23 at 18.21.34",
+      "sort_order": 8,
+      "active": true
+    }
+  ]
+}

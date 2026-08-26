@@ -1,4 +1,5 @@
 import { getImageUrl, supabase } from "@/lib/supabase";
+import { fallbackGallery, fallbackProducts } from "@/data/catalogFallback";
 
 /** @typedef {{ id: string, name: string, category: string, age: string, size: string, wet: boolean, capacity: string, price: number | null, image: string, fallbackImage: string, imagePath: string | null, description: string, features: string[], active: boolean }} Product */
 
@@ -14,6 +15,65 @@ const realImages = new Set([
   "montagem-completa-real.jpeg",
   "recreacao-real.jpeg",
 ]);
+
+const PRODUCTS_CACHE_KEY = "monteiro-locacoes-public-products";
+const GALLERY_CACHE_KEY = "monteiro-locacoes-public-gallery";
+
+type CachedContent<T> = {
+  data: T[];
+  updatedAt: string;
+};
+
+type PublishedBackup = {
+  generatedAt: string;
+  products: ReturnType<typeof mapProduct>[];
+  gallery: ReturnType<typeof mapGalleryImage>[];
+};
+
+function readCache<T>(key: string): CachedContent<T> | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = window.localStorage.getItem(key);
+    if (!cached) return null;
+
+    const parsed = JSON.parse(cached) as CachedContent<T>;
+    return Array.isArray(parsed.data) && parsed.updatedAt ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache<T>(key: string, data: T[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(
+      key,
+      JSON.stringify({ data, updatedAt: new Date().toISOString() }),
+    );
+  } catch {
+    // A indisponibilidade do armazenamento local não deve bloquear o catálogo.
+  }
+}
+
+async function readPublishedBackup(): Promise<PublishedBackup | null> {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const response = await fetch("/data/catalog-backup.json", {
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+
+    const backup = (await response.json()) as PublishedBackup;
+    return Array.isArray(backup.products) && Array.isArray(backup.gallery)
+      ? backup
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 /** @param {string | null} path */
 function getLegacyImageUrl(path) {
@@ -62,6 +122,40 @@ export async function fetchProducts(includeInactive = false) {
   return data.map(mapProduct);
 }
 
+export async function fetchPublicProducts() {
+  try {
+    const products = await fetchProducts();
+    writeCache(PRODUCTS_CACHE_KEY, products);
+    return {
+      products,
+      source: "live" as const,
+      updatedAt: new Date().toISOString(),
+    };
+  } catch {
+    const cached = readCache<ReturnType<typeof mapProduct>>(PRODUCTS_CACHE_KEY);
+    const publishedBackup = await readPublishedBackup();
+    const backupIsNewer =
+      publishedBackup &&
+      (!cached ||
+        new Date(publishedBackup.generatedAt).getTime() >
+          new Date(cached.updatedAt).getTime());
+
+    if (backupIsNewer) {
+      return {
+        products: publishedBackup.products,
+        source: "backup" as const,
+        updatedAt: publishedBackup.generatedAt,
+      };
+    }
+
+    if (cached) {
+      return { products: cached.data, source: "cache" as const, updatedAt: cached.updatedAt };
+    }
+
+    return { products: fallbackProducts, source: "fallback" as const, updatedAt: null };
+  }
+}
+
 export async function fetchGallery(includeInactive = false) {
   if (!supabase) throw new Error("Supabase não configurado.");
   let query = supabase.from("gallery_images").select("*").order("sort_order");
@@ -73,4 +167,49 @@ export async function fetchGallery(includeInactive = false) {
     image: getImageUrl(image.image_path),
     fallbackImage: getLegacyImageUrl(image.image_path),
   }));
+}
+
+export async function fetchPublicGallery() {
+  try {
+    const gallery = await fetchGallery();
+    writeCache(GALLERY_CACHE_KEY, gallery);
+    return {
+      gallery,
+      source: "live" as const,
+      updatedAt: new Date().toISOString(),
+    };
+  } catch {
+    const cached = readCache<ReturnType<typeof mapGalleryImage>>(GALLERY_CACHE_KEY);
+    const publishedBackup = await readPublishedBackup();
+    const backupIsNewer =
+      publishedBackup &&
+      (!cached ||
+        new Date(publishedBackup.generatedAt).getTime() >
+          new Date(cached.updatedAt).getTime());
+
+    if (backupIsNewer) {
+      return {
+        gallery: publishedBackup.gallery,
+        source: "backup" as const,
+        updatedAt: publishedBackup.generatedAt,
+      };
+    }
+
+    if (cached) {
+      return { gallery: cached.data, source: "cache" as const, updatedAt: cached.updatedAt };
+    }
+
+    return { gallery: fallbackGallery, source: "fallback" as const, updatedAt: null };
+  }
+}
+
+/** @param {Record<string, unknown>} image */
+function mapGalleryImage(image) {
+  return {
+    ...image,
+    image: getImageUrl(/** @type {string | null} */ (image.image_path || null)),
+    fallbackImage: getLegacyImageUrl(
+      /** @type {string | null} */ (image.image_path || null),
+    ),
+  };
 }

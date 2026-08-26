@@ -251,14 +251,23 @@ export default function AppointmentImport() {
             Cole a mensagem enviada ao grupo interno. O sistema organiza os
             dados, mas ainda exige revisão antes de criar o agendamento.
           </p>
-          <Link to="/admin/agendamentos/revisar" className="mt-4 inline-flex text-sm font-bold text-[#008fc0]">
+          <Link
+            to="/admin/agendamentos/revisar"
+            className="mt-4 inline-flex text-sm font-bold text-[#008fc0]"
+          >
             Ver fila de revisão →
           </Link>
         </header>
         <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold">
-          <span className="rounded-full bg-slate-950 px-3 py-1.5 text-white">1. Importar mensagem</span>
-          <span className="rounded-full bg-white px-3 py-1.5 text-slate-500">2. Revisar dados e produtos</span>
-          <span className="rounded-full bg-white px-3 py-1.5 text-slate-500">3. Confirmar reserva</span>
+          <span className="rounded-full bg-slate-950 px-3 py-1.5 text-white">
+            1. Importar mensagem
+          </span>
+          <span className="rounded-full bg-white px-3 py-1.5 text-slate-500">
+            2. Revisar dados e produtos
+          </span>
+          <span className="rounded-full bg-white px-3 py-1.5 text-slate-500">
+            3. Confirmar reserva
+          </span>
         </div>
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

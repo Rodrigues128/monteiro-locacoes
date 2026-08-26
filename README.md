@@ -65,13 +65,42 @@ Além do catálogo e da agenda, o painel possui módulos para clientes, orçamen
 
 - **Brinquedos e catálogo:** produtos publicados no site público.
 - **Clientes:** contatos cadastrados ou criados durante a confirmação de uma reserva.
-- **Orçamentos e documentos:** propostas, contratos e recibos organizados por cliente.
+- **Orçamentos e documentos:** propostas com produtos, quantidades, valores e total calculado; contratos e recibos organizados por cliente.
 - **Financeiro:** entradas e saídas manuais da operação.
 - **Disponibilidade e estatísticas:** agenda operacional, bloqueios internos e indicadores das reservas.
+
+### PDF de orçamento
+
+Ao criar um orçamento, adicione os produtos do catálogo, ajuste quantidades e valores unitários. Depois, use **Gerar PDF** no cartão da proposta. O documento abre em uma nova aba com os dados da empresa, cliente, itens e total; no botão **Salvar / imprimir PDF**, escolha **Salvar como PDF** no diálogo do navegador. Não é necessário serviço externo ou chave secreta para esse fluxo.
 
 ## Publicação no Netlify
 
 Em **Site configuration > Environment variables**, adicione `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Faça um novo deploy após alterar variáveis. O arquivo `public/_redirects` mantém rotas como `/admin` funcionando diretamente.
+
+## Contingência quando o Supabase estiver indisponível
+
+O catálogo e a galeria públicos usam o Supabase como fonte principal, mas armazenam no navegador a última versão carregada com sucesso. Se a conexão falhar, o site mostra essa versão salva; no primeiro acesso sem conexão, usa imagens e atrações locais de emergência. O visitante recebe um aviso e pode tentar reconectar sem recarregar a página.
+
+O painel administrativo não usa dados de emergência para criar ou alterar informações. Isso evita que uma atualização seja confundida com dados reais enquanto o banco estiver fora do ar.
+
+Se o site entrar em modo de contingência, siga esta ordem:
+
+1. Consulte [status.supabase.com](https://status.supabase.com/).
+2. Abra o projeto no Supabase Dashboard e confirme que ele está ativo.
+3. Em **Project Settings > API**, confira a `VITE_SUPABASE_URL` e a chave pública configuradas em `.env` e no Netlify.
+4. Após qualquer correção nas variáveis do Netlify, faça um novo deploy.
+
+### Backup global automático
+
+O workflow [`.github/workflows/public-catalog-backup.yml`](./.github/workflows/public-catalog-backup.yml) atualiza a cada 30 minutos um arquivo público com os produtos, fotos e cópias locais das imagens. O commit criado pelo workflow aciona o deploy automático do Netlify. Assim, se o Supabase cair, todos os visitantes recebem a última cópia global publicada, mesmo em um navegador que nunca acessou o site antes.
+
+Ative uma única vez no GitHub em **Settings > Secrets and variables > Actions**:
+
+1. Crie o secret `VITE_SUPABASE_URL` com a URL do projeto em **Supabase > Project Settings > API**.
+2. Crie o secret `VITE_SUPABASE_ANON_KEY` com a chave Publishable/anon pública do mesmo local.
+3. Depois que o Supabase estiver acessível, abra **Actions > Public catalog backup > Run workflow** para criar a primeira cópia imediatamente.
+
+O script também pode ser executado localmente com `npm run backup:public`. Ele preserva o último backup válido quando o Supabase não responde.
 
 ## Desenvolvimento
 

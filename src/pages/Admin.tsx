@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchGallery, fetchProducts } from "@/lib/catalog";
 import {
   getImageUrl,
@@ -89,23 +89,80 @@ function Notice(/** @type {NoticeProps} */ { message }) {
 function DeleteConfirmation({ target, busy, onCancel, onConfirm }) {
   if (!target) return null;
   const product = target.type === "product";
-  const title = product ? `Excluir “${target.item.name}”?` : "Excluir esta foto da galeria?";
+  const title = product
+    ? `Excluir “${target.item.name}”?`
+    : "Excluir esta foto da galeria?";
   const description = product
     ? "A atração será removida do catálogo e não aparecerá mais para seus clientes."
     : "A imagem será removida da galeria pública e do armazenamento do projeto.";
 
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/55 p-5 backdrop-blur-sm" onClick={busy ? undefined : onCancel}>
-      <section role="dialog" aria-modal="true" aria-labelledby="delete-title" onClick={(event) => event.stopPropagation()} className="w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+    <div
+      className="fixed inset-0 z-[70] grid place-items-center bg-slate-950/55 p-5 backdrop-blur-sm"
+      onClick={busy ? undefined : onCancel}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-title"
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl"
+      >
         <header className="bg-gradient-to-br from-rose-500 to-rose-700 px-6 py-7 text-white sm:px-8">
-          <div className="flex items-start justify-between gap-4"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20"><Trash2 size={23} /></span><button type="button" disabled={busy} onClick={onCancel} className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 transition hover:bg-white/25 disabled:opacity-50" aria-label="Fechar confirmação"><X size={18} /></button></div>
-          <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-white/75">Ação permanente</p>
-          <h2 id="delete-title" className="mt-2 text-3xl font-black tracking-[-.04em]">{title}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/85">{description}</p>
+          <div className="flex items-start justify-between gap-4">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/20">
+              <Trash2 size={23} />
+            </span>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onCancel}
+              className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 transition hover:bg-white/25 disabled:opacity-50"
+              aria-label="Fechar confirmação"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <p className="mt-5 text-xs font-black uppercase tracking-[.18em] text-white/75">
+            Ação permanente
+          </p>
+          <h2
+            id="delete-title"
+            className="mt-2 text-3xl font-black tracking-[-.04em]"
+          >
+            {title}
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/85">
+            {description}
+          </p>
         </header>
         <div className="p-6 sm:p-8">
-          <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm leading-relaxed text-rose-800">Esta ação não pode ser desfeita. Confira o item antes de continuar.</div>
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" disabled={busy} onClick={onCancel} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50">Voltar</button><button type="button" disabled={busy} onClick={onConfirm} className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-700 disabled:opacity-60">{busy ? <LoaderCircle size={17} className="animate-spin" /> : <Trash2 size={17} />}{busy ? "Excluindo..." : "Excluir definitivamente"}</button></div>
+          <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm leading-relaxed text-rose-800">
+            Esta ação não pode ser desfeita. Confira o item antes de continuar.
+          </div>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onCancel}
+              className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onConfirm}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-700 disabled:opacity-60"
+            >
+              {busy ? (
+                <LoaderCircle size={17} className="animate-spin" />
+              ) : (
+                <Trash2 size={17} />
+              )}
+              {busy ? "Excluindo..." : "Excluir definitivamente"}
+            </button>
+          </div>
         </div>
       </section>
     </div>
@@ -496,6 +553,7 @@ function ProductForm(
 
 export default function Admin() {
   const { search } = useLocation();
+  const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [products, setProducts] = useState([]);
   const [gallery, setGallery] = useState([]);
@@ -507,21 +565,27 @@ export default function Admin() {
   const [deleting, setDeleting] = useState(false);
   const [tab, setTab] = useState(getInitialTab);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(/** @type {boolean | null} */ (null));
+  const [isAdmin, setIsAdmin] = useState(/** @type {boolean | null} */ null);
+  const selectTab = (nextTab) => {
+    navigate(nextTab === "overview" ? "/admin" : `/admin?tab=${nextTab}`);
+  };
   const reload = async () => {
-    const [loadedProducts, loadedGallery, loadedReservations, pendingMessages] = await Promise.all([
-      fetchProducts(true),
-      fetchGallery(true),
-      supabase
-        .from("appointments")
-        .select("id, event_date, start_time, end_time, address, venue_type, total_amount, status, customers(id, name, phone), appointment_items(quantity, original_name, products(name))")
-        .in("status", ["confirmed", "completed"])
-        .order("event_date", { ascending: true }),
-      supabase
-        .from("appointment_messages")
-        .select("id", { count: "exact", head: true })
-        .in("status", ["pending_review", "ready_to_confirm"]),
-    ]);
+    const [loadedProducts, loadedGallery, loadedReservations, pendingMessages] =
+      await Promise.all([
+        fetchProducts(true),
+        fetchGallery(true),
+        supabase
+          .from("appointments")
+          .select(
+            "id, event_date, start_time, end_time, address, venue_type, total_amount, status, customers(id, name, phone), appointment_items(quantity, original_name, products(name))",
+          )
+          .in("status", ["confirmed", "completed"])
+          .order("event_date", { ascending: true }),
+        supabase
+          .from("appointment_messages")
+          .select("id", { count: "exact", head: true })
+          .in("status", ["pending_review", "ready_to_confirm"]),
+      ]);
     if (loadedReservations.error) throw loadedReservations.error;
     if (pendingMessages.error) throw pendingMessages.error;
     setProducts(loadedProducts);
@@ -536,7 +600,9 @@ export default function Admin() {
   }, [notice]);
   useEffect(() => {
     const nextTab = new URLSearchParams(search).get("tab");
-    setTab(nextTab === "products" || nextTab === "gallery" ? nextTab : "overview");
+    setTab(
+      nextTab === "products" || nextTab === "gallery" ? nextTab : "overview",
+    );
   }, [search]);
   useEffect(() => {
     if (!supabase) return;
@@ -610,13 +676,11 @@ export default function Admin() {
       await Promise.all(
         files.map(async (file, index) => {
           const imagePath = await uploadImage(file, "gallery");
-          const { error } = await supabase
-            .from("gallery_images")
-            .insert({
-              image_path: imagePath,
-              alt_text: file.name.replace(/\.[^.]+$/, ""),
-              sort_order: gallery.length + index + 1,
-            });
+          const { error } = await supabase.from("gallery_images").insert({
+            image_path: imagePath,
+            alt_text: file.name.replace(/\.[^.]+$/, ""),
+            sort_order: gallery.length + index + 1,
+          });
           if (error) throw error;
         }),
       );
@@ -650,7 +714,8 @@ export default function Admin() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      if (deleteTarget.type === "product") await removeProduct(deleteTarget.item);
+      if (deleteTarget.type === "product")
+        await removeProduct(deleteTarget.item);
       else await removeGallery(deleteTarget.item);
       setDeleteTarget(null);
     } finally {
@@ -716,7 +781,7 @@ export default function Admin() {
         reservations={reservations}
         pendingReviewCount={pendingReviewCount}
         tab={tab}
-        setTab={setTab}
+        setTab={selectTab}
         setEditing={setEditing}
         productForm={
           editing && (
@@ -729,12 +794,21 @@ export default function Admin() {
         }
         onSignOut={() => supabase.auth.signOut()}
         onToggleProduct={toggleProduct}
-        onRemoveProduct={(product) => setDeleteTarget({ type: "product", item: product })}
+        onRemoveProduct={(product) =>
+          setDeleteTarget({ type: "product", item: product })
+        }
         onUploadGallery={uploadGallery}
         onUpdateGallery={updateGallery}
-        onRemoveGallery={(image) => setDeleteTarget({ type: "gallery", item: image })}
+        onRemoveGallery={(image) =>
+          setDeleteTarget({ type: "gallery", item: image })
+        }
       />
-      <DeleteConfirmation target={deleteTarget} busy={deleting} onCancel={() => setDeleteTarget(null)} onConfirm={confirmDelete} />
+      <DeleteConfirmation
+        target={deleteTarget}
+        busy={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
       <Notice message={notice} />
     </>
   );
