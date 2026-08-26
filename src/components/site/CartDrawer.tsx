@@ -2,6 +2,45 @@ import { Calendar, Clock3, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-re
 import { useEffect, useRef, useState } from "react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 
+function getTodayIso() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+function formatTimeInput(value) {
+  const acceptedDigits = [];
+
+  for (const digit of value.replace(/\D/g, "")) {
+    if (acceptedDigits.length === 4) break;
+
+    const position = acceptedDigits.length;
+    const firstHourDigit = acceptedDigits[0];
+    const isInvalidHourStart = position === 0 && digit > "2";
+    const isInvalidHourEnd =
+      position === 1 && firstHourDigit === "2" && digit > "3";
+    const isInvalidMinuteStart = position === 2 && digit > "5";
+
+    if (isInvalidHourStart || isInvalidHourEnd || isInvalidMinuteStart) {
+      continue;
+    }
+
+    acceptedDigits.push(digit);
+  }
+
+  const digits = acceptedDigits.join("");
+  return digits.length <= 2 ? digits : `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
+function isValidTime(value) {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return false;
+
+  const [, hours, minutes] = match;
+  return Number(hours) < 24 && Number(minutes) < 60;
+}
+
 /**
  * @typedef {{
  *   id: string,
@@ -15,7 +54,11 @@ import WhatsAppIcon from "@/components/WhatsAppIcon";
  *   items: CartItem[],
  *   onClose: () => void,
  *   onRemove: (id: string) => void,
- *   onQuantityChange: (id: string, change: number) => void
+ *   onQuantityChange: (id: string, change: number) => void,
+ *   date: string,
+ *   time: string,
+ *   onDateChange: (date: string) => void,
+ *   onTimeChange: (time: string) => void
  * }} CartDrawerProps
  */
 
@@ -26,16 +69,22 @@ export default function CartDrawer(
     onClose,
     onRemove,
     onQuantityChange,
+    date,
+    time,
+    onDateChange,
+    onTimeChange,
   },
 ) {
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
   const closeButton = useRef(/** @type {HTMLButtonElement | null} */ (null));
+  const dateInput = useRef(/** @type {HTMLInputElement | null} */ (null));
+  const [dateError, setDateError] = useState("");
+  const [timeInput, setTimeInput] = useState(time);
+  const [timeError, setTimeError] = useState("");
   const total = items.reduce(
     (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
     0,
   );
-  const today = new Date().toLocaleDateString("en-CA");
+  const today = getTodayIso();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -52,7 +101,88 @@ export default function CartDrawer(
     };
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (dateInput.current && dateInput.current.value !== date) {
+      dateInput.current.value = date;
+    }
+  }, [date]);
+
+  useEffect(() => {
+    if (time) setTimeInput(time);
+  }, [time]);
+
+  const handleDateChange = (value) => {
+    if (value && value < today) {
+      setDateError("Escolha uma data de hoje ou futura.");
+      return;
+    }
+
+    setDateError("");
+  };
+
+  const handleDateBlur = (value) => {
+    if (value && value < today) {
+      setDateError("Escolha uma data de hoje ou futura.");
+      onDateChange("");
+      return;
+    }
+
+    setDateError("");
+    onDateChange(value);
+  };
+
+  const handleTimeChange = (value) => {
+    const formattedTime = formatTimeInput(value);
+    setTimeInput(formattedTime);
+
+    if (!formattedTime) {
+      setTimeError("");
+      return;
+    }
+
+    if (formattedTime.length === 5 && !isValidTime(formattedTime)) {
+      setTimeError("Informe um horário entre 00:00 e 23:59.");
+      return;
+    }
+
+    setTimeError("");
+  };
+
+  const handleTimeBlur = () => {
+    if (!timeInput) {
+      setTimeError("");
+      onTimeChange("");
+      return;
+    }
+
+    if (!isValidTime(timeInput)) {
+      setTimeError("Informe um horário entre 00:00 e 23:59.");
+      onTimeChange("");
+      return;
+    }
+
+    setTimeError("");
+    onTimeChange(timeInput);
+  };
+
   const send = () => {
+    const selectedDate = dateInput.current?.value || "";
+    if (selectedDate && selectedDate < today) {
+      setDateError("Escolha uma data de hoje ou futura.");
+      dateInput.current?.focus();
+      return;
+    }
+
+    if (timeInput && !isValidTime(timeInput)) {
+      setTimeError("Informe um horário entre 00:00 e 23:59.");
+      return;
+    }
+
+    setDateError("");
+    setTimeError("");
+    onDateChange(selectedDate);
+    onTimeChange(timeInput);
+
     const list = items
       .map((item) => `• ${item.quantity || 1}x ${item.name}`)
       .join("\n");
@@ -60,8 +190,8 @@ export default function CartDrawer(
     const estimate = hasCustomPrice
       ? `Valor parcial dos itens com preço: R$ ${total},00. Os demais valores serão confirmados no atendimento.`
       : `Valor estimado: R$ ${total},00`;
-    const schedule = date
-      ? `${date}${time ? ` às ${time}` : ""}`
+    const schedule = selectedDate
+      ? `${selectedDate}${timeInput ? ` às ${timeInput}` : ""}`
       : "uma data e horário a combinar";
     const text = `Olá! Gostaria de consultar disponibilidade para ${schedule}:\n${list}\n${estimate}`;
     window.open(
@@ -186,25 +316,43 @@ export default function CartDrawer(
           <label className="text-sm font-bold text-gray-700">
             <span className="mb-2 flex items-center gap-2"><Calendar size={16} className="text-[#00BFFF]" /> Data do evento</span>
             <input
+              ref={dateInput}
               type="date"
               min={today}
-              value={date}
+              defaultValue={date}
               onChange={(
                 /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
-              ) => setDate(event.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm outline-none focus:border-[#00BFFF]"
+              ) => handleDateChange(event.target.value)}
+              onBlur={(
+                /** @type {import("react").FocusEvent<HTMLInputElement>} */ event,
+              ) => handleDateBlur(event.target.value)}
+              aria-invalid={Boolean(dateError)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm outline-none focus:border-[#00BFFF] aria-[invalid=true]:border-red-400"
             />
+            {dateError && <span className="mt-1 block text-xs font-medium text-red-500">{dateError}</span>}
           </label>
           <label className="text-sm font-bold text-gray-700">
             <span className="mb-2 flex items-center gap-2"><Clock3 size={16} className="text-[#00BFFF]" /> Horário</span>
             <input
-              type="time"
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm outline-none focus:border-[#00BFFF]"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="HH:mm"
+              maxLength={5}
+              value={timeInput}
+              onChange={(
+                /** @type {import("react").ChangeEvent<HTMLInputElement>} */ event,
+              ) => handleTimeChange(event.target.value)}
+              onBlur={handleTimeBlur}
+              aria-invalid={Boolean(timeError)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm outline-none focus:border-[#00BFFF] aria-[invalid=true]:border-red-400"
             />
+            {timeError && <span className="mt-1 block text-xs font-medium text-red-500">{timeError}</span>}
           </label>
         </div>
+        <p className="mt-3 text-xs leading-relaxed text-gray-400">
+          Sua sacola, data e horário ficam salvos neste navegador por até 30 dias. Isso não reserva a data.
+        </p>
         <div className="mt-4 flex justify-between text-lg font-black text-gray-900">
           <span>Valor estimado</span>
           <span>

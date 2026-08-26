@@ -43,6 +43,9 @@ No GitHub, crie o secret `SUPABASE_DB_URL` com a connection string obtida em **S
 
 ## Segurança
 
+- O login é feito pelo Supabase Auth: após autenticar, o SDK envia automaticamente o JWT do usuário em cada chamada ao Supabase e renova a sessão enquanto ela for válida.
+- As políticas RLS usam `auth.uid()` e validam o papel `authenticated` do JWT antes de consultar `admin_users`.
+- `admin_users` é a fonte de autorização administrativa. Remover um usuário dessa tabela bloqueia seu acesso imediatamente, sem esperar o JWT expirar.
 - RLS restringe operações administrativas aos usuários registrados em `admin_users`.
 - O bucket `catalog` aceita apenas JPG, PNG e WEBP de até 5 MB nas pastas permitidas.
 - Crie administradores apenas pelo Supabase Dashboard ou SQL; o painel não possui cadastro público.
