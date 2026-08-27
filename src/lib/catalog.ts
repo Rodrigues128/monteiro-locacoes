@@ -122,6 +122,7 @@ export async function fetchProducts(includeInactive = false) {
   return data.map(mapProduct);
 }
 
+
 export async function fetchPublicProducts() {
   try {
     const products = await fetchProducts();
@@ -169,6 +170,7 @@ export async function fetchGallery(includeInactive = false) {
   }));
 }
 
+
 export async function fetchPublicGallery() {
   try {
     const gallery = await fetchGallery();
@@ -204,7 +206,7 @@ export async function fetchPublicGallery() {
 }
 
 /** @param {Record<string, unknown>} image */
-function mapGalleryImage(image) {
+export function mapGalleryImage(image) {
   return {
     ...image,
     image: getImageUrl(/** @type {string | null} */ (image.image_path || null)),

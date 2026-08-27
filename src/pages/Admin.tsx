@@ -11,13 +11,15 @@ import {
   X,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { fetchGallery, fetchProducts } from "@/lib/catalog";
+import { fetchAdminGallery, fetchAdminProducts } from "@/lib/adminCatalog";
 import {
   getImageUrl,
   isSupabaseConfigured,
+  getSessionPersistence,
+  setSessionPersistence,
   STORAGE_BUCKET,
-  supabase,
 } from "@/lib/supabase";
+import { adminSupabase as supabase } from "@/lib/adminApi";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 
 const emptyProduct = {
@@ -177,15 +179,19 @@ function Login(/** @type {LoginProps} */ { onLogin }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(getSessionPersistence);
   const submit = async (event) => {
     event.preventDefault();
     if (!supabase) return;
     setLoading(true);
     setError("");
+    setSessionPersistence(keepSignedIn);
     const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
+      remember: keepSignedIn,
     });
+    setPassword("");
     setLoading(false);
     if (loginError) setError("E-mail ou senha inválidos.");
     else onLogin();
@@ -312,6 +318,22 @@ function Login(/** @type {LoginProps} */ { onLogin }) {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 transition hover:border-cyan-200 hover:bg-cyan-50/40">
+                <input
+                  type="checkbox"
+                  checked={keepSignedIn}
+                  onChange={(event) => setKeepSignedIn(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#00BFFF] focus:ring-[#00BFFF]"
+                />
+                <span>
+                  <strong className="block text-slate-800">
+                    Manter conectado neste dispositivo
+                  </strong>
+                  <span className="mt-1 block text-xs leading-relaxed text-slate-500">
+                    Desmarque em computadores compartilhados. Nesse caso, a sessão é encerrada ao fechar o navegador.
+                  </span>
+                </span>
               </label>
             </div>
             <button
@@ -572,8 +594,8 @@ export default function Admin() {
   const reload = async () => {
     const [loadedProducts, loadedGallery, loadedReservations, pendingMessages] =
       await Promise.all([
-        fetchProducts(true),
-        fetchGallery(true),
+        fetchAdminProducts(),
+        fetchAdminGallery(),
         supabase
           .from("appointments")
           .select(
@@ -606,14 +628,49 @@ export default function Admin() {
   }, [search]);
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+    let active = true;
+
+    const restoreSession = async () => {
+      const {
+        data: { session: storedSession },
+      } = await supabase.auth.getSession();
+
+      if (!storedSession) {
+        if (active) {
+          setSession(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (!active) return;
+      const hasInvalidSession = error?.status === 401 || error?.status === 403;
+      if (hasInvalidSession || (!error && !user)) {
+        await supabase.auth.signOut({ scope: "local" });
+        setSession(null);
+      } else {
+        setSession({ ...storedSession, user });
+      }
       setLoading(false);
-    });
+    };
+
+    restoreSession();
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => setSession(nextSession),
+      (event, nextSession) => {
+        if (event === "INITIAL_SESSION") return;
+        setSession(nextSession);
+        setLoading(false);
+      },
     );
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
   useEffect(() => {
     if (!session || !supabase) {

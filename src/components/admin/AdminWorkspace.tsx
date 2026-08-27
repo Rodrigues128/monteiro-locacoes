@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { adminSupabase as supabase } from "@/lib/adminApi";
 
 type AdminWorkspaceProps = {
   children: ReactNode;

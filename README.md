@@ -15,6 +15,8 @@ Copie `.env.example` para `.env` e informe:
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+# Opcional: URL do backend seguro do painel administrativo.
+VITE_ADMIN_API_URL=
 ```
 
 Use apenas a chave Publishable ou anon public no frontend. Nunca versiona `sb_secret`, `service_role`, connection string do banco ou senhas.
@@ -43,9 +45,13 @@ No GitHub, crie o secret `SUPABASE_DB_URL` com a connection string obtida em **S
 
 ## Segurança
 
+- Para usar a sessão administrativa mais segura, publique o backend em `C:\Users\estagio.sst4\Paulo\monteiro-locacoes-api` e configure `VITE_ADMIN_API_URL`. Nesse modo, os JWTs ficam em cookies `HttpOnly`; o navegador não recebe a chave `service_role` nem armazena tokens administrativos no `localStorage`.
+- No backend, mantenha `SUPABASE_SERVICE_ROLE_KEY` apenas nas variáveis do servidor. Nunca a adicione ao Vite, Netlify, Vercel, GitHub Actions ou arquivos versionados.
 - O login é feito pelo Supabase Auth: após autenticar, o SDK envia automaticamente o JWT do usuário em cada chamada ao Supabase e renova a sessão enquanto ela for válida.
 - As políticas RLS usam `auth.uid()` e validam o papel `authenticated` do JWT antes de consultar `admin_users`.
 - `admin_users` é a fonte de autorização administrativa. Remover um usuário dessa tabela bloqueia seu acesso imediatamente, sem esperar o JWT expirar.
+- No login, **Manter conectado neste dispositivo** grava a sessão apenas neste navegador. Desmarcado, o token fica na sessão temporária e é removido ao fechar o navegador.
+- Ao restaurar a sessão persistida, o painel consulta o Supabase Auth antes de liberar o acesso. Defina uma expiração curta para o JWT em **Authentication > Settings**; o SDK renova o token enquanto a sessão for válida.
 - RLS restringe operações administrativas aos usuários registrados em `admin_users`.
 - O bucket `catalog` aceita apenas JPG, PNG e WEBP de até 5 MB nas pastas permitidas.
 - Crie administradores apenas pelo Supabase Dashboard ou SQL; o painel não possui cadastro público.

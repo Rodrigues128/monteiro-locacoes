@@ -11,7 +11,8 @@ import {
   hashAppointmentMessage,
   parseAppointmentMessage,
 } from "@/lib/appointmentParser";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { adminSupabase as supabase } from "@/lib/adminApi";
 import AdminWorkspace from "@/components/admin/AdminWorkspace";
 import { Link } from "react-router-dom";
 
